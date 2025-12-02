@@ -1,4 +1,4 @@
-module Puzzles.Day2 (puzzle2) where
+module Puzzles.Day2 (puzzle) where
 
 import Control.Monad
 import Data.Functor
@@ -10,8 +10,8 @@ import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer qualified as Lex
 
-puzzle2 :: Puzzle
-puzzle2 =
+puzzle :: Puzzle
+puzzle =
     Puzzle
         { number = 2
         , parser = (<* newline) $ flip sepBy (char ',') $ (,) <$> (Lex.decimal <* char '-') <*> Lex.decimal

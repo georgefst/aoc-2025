@@ -5,8 +5,8 @@ import Data.Functor
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as T
 import Puzzle
-import Puzzles.Day1
-import Puzzles.Day2
+import Puzzles.Day1 qualified as Day1
+import Puzzles.Day2 qualified as Day2
 import Test.Tasty
 import Test.Tasty.Golden (goldenVsString)
 import Test.Tasty.Ingredients.ConsoleReporter
@@ -19,8 +19,8 @@ main =
         . testGroup "tests"
         $ ["examples", "real"] <&> \t ->
             testGroup t $
-                [ puzzle1
-                , puzzle2
+                [ Day1.puzzle
+                , Day2.puzzle
                 ]
                     <&> \Puzzle{number, parser, parts} ->
                         let

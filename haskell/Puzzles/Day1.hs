@@ -1,4 +1,4 @@
-module Puzzles.Day1 (puzzle1) where
+module Puzzles.Day1 (puzzle) where
 
 import Control.Monad.State
 import Data.Bifunctor
@@ -9,8 +9,8 @@ import Text.Megaparsec hiding (Pos)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer qualified as Lex
 
-puzzle1 :: Puzzle
-puzzle1 =
+puzzle :: Puzzle
+puzzle =
     Puzzle
         { number = 1
         , parser = flip sepEndBy newline $ (,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> Lex.decimal)
