@@ -11,13 +11,16 @@ main = do
 runPuzzle :: Puzzle a -> IO ()
 runPuzzle p = do
     Just input <- p.parse <$> readFile ("inputs/examples/" <> show p.number)
-    putStrLn $ p.part1 input
-    putStrLn $ p.part2 input
+    putStrLn $ p.part1.solve input
+    putStrLn $ p.part2.solve input
 data Puzzle input = Puzzle
     { number :: Word
     , parse :: String -> Maybe input
-    , part1 :: input -> String
-    , part2 :: input -> String
+    , part1 :: Part input
+    , part2 :: Part input
+    }
+data Part input = Part
+    { solve :: input -> String
     }
 
 puzzle1 :: Puzzle [(Direction, Inc)]
@@ -32,14 +35,15 @@ puzzle1 =
                     _ -> Nothing
                 )
                 . lines
-        , part1 =
+        , part1 = Part { solve =
             show
                 . sum
                 . flip evalState 50
                 . traverse \(d, i) -> state \p ->
                     let (_, p') = step i d p
                      in (Count if p' == 0 then 1 else 0, p')
-        , part2 =
+            }
+        , part2 = Part { solve =
             show
                 . sum
                 . flip evalState 50
@@ -53,6 +57,7 @@ puzzle1 =
                                     | p' == 0 -> abs c + 1
                                     | otherwise -> abs c
                      in (c', p')
+            }
         }
 
 data Direction = L | R
