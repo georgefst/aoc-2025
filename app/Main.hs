@@ -7,6 +7,7 @@ import Data.Functor
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
+import Data.Text.IO qualified as T
 import Data.Void
 import Test.Tasty
 import Test.Tasty.Golden (goldenVsString)
@@ -33,11 +34,11 @@ puzzleTest p =
                             BL.fromStrict . encodeUtf8 . pp.solve <$> input
   where
     pt = show p.number
-    parseFile fp = maybe (fail "parse failure") pure . parseMaybe (p.parser <* eof) =<< readFile fp
+    parseFile fp = maybe (fail "parse failure") pure . parseMaybe (p.parser <* eof) =<< T.readFile fp
 
 data Puzzle input = Puzzle
     { number :: Word
-    , parser :: Parsec Void String input
+    , parser :: Parsec Void Text input
     , part1 :: Part input
     , part2 :: Part input
     }
