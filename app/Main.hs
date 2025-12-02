@@ -29,18 +29,18 @@ main =
             ]
 
 puzzleTest :: Puzzle a -> TestTree
-puzzleTest p =
+puzzleTest Puzzle{..} =
     testGroup pt $
         ["examples", "real"] <&> \t ->
             withResource (parseFile $ "inputs/" <> t <> "/" <> pt) mempty \input ->
                 testGroup t $
-                    zip (map show [1 :: Int ..]) p.parts <&> \(n, pp) ->
+                    zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
                         goldenVsString n ("outputs/" <> t <> "/" <> pt <> "/" <> n) $
                             BL.fromStrict . encodeUtf8 . pp <$> input
   where
-    pt = show p.number
+    pt = show number
     parseFile fp =
-        either (fail . ("parse failure: " <>) . errorBundlePretty) pure . runParser (p.parser <* eof) fp
+        either (fail . ("parse failure: " <>) . errorBundlePretty) pure . runParser (parser <* eof) fp
             =<< T.readFile fp
 
 data Puzzle input = Puzzle
