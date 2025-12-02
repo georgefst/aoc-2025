@@ -11,7 +11,10 @@ executable aoc
     default-language: GHC2024
     default-extensions:
         BlockArguments
+        DuplicateRecordFields
         MultiWayIf
+        NoFieldSelectors
+        OverloadedRecordDot
         ViewPatterns
     ghc-options:
         -Wall
