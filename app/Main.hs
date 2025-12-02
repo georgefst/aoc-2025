@@ -11,13 +11,14 @@ import Data.Text.IO qualified as T
 import Data.Void
 import Test.Tasty
 import Test.Tasty.Golden (goldenVsString)
+import Test.Tasty.Ingredients.ConsoleReporter
 import Text.Megaparsec hiding (Pos)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer qualified as Lex
 
 main :: IO ()
 main =
-    defaultMain $
+    defaultMain . localOption (Always :: UseColor) $
         testGroup
             "tests"
             [ puzzleTest puzzle1
