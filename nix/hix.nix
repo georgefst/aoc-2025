@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ ... }: {
   name = "aoc";
   compiler-nix-name = "ghc912";
   shell.tools.cabal = "latest";
