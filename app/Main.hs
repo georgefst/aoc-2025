@@ -1,9 +1,11 @@
 module Main (main) where
 
+import Control.Monad
 import Control.Monad.State
 import Data.Bifunctor
 import Data.ByteString.Lazy qualified as BL
 import Data.Functor
+import Data.Maybe
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
@@ -23,6 +25,7 @@ main =
         $ testGroup
             "tests"
             [ puzzleTest puzzle1
+            , puzzleTest puzzle2
             ]
 
 puzzleTest :: Puzzle a -> TestTree
@@ -103,3 +106,26 @@ step :: Inc -> Direction -> Pos -> (Count, Pos)
 step (Inc i) d (Pos p) = bimap Count Pos case d of
     L -> (p - i) `divMod` 100
     R -> (p + i) `divMod` 100
+
+puzzle2 :: Puzzle [(ID, ID)]
+puzzle2 =
+    Puzzle
+        { number = 2
+        , parser = (<* newline) $ flip sepBy (char ',') $ (,) <$> (Lex.decimal <* char '-') <*> Lex.decimal
+        , part1 =
+            Part
+                { solve =
+                    T.show
+                        . sum
+                        . concatMap
+                            (mapMaybe (\n -> guard (isRepetition n) $> n) . uncurry enumFromTo)
+                , expected = "1227775554"
+                }
+        , part2 = error "part 2 incomplete"
+        }
+
+newtype ID = ID Int
+    deriving newtype (Eq, Ord, Show, Num, Enum)
+
+isRepetition :: ID -> Bool
+isRepetition (T.show -> n) = uncurry (==) $ T.splitAt (T.length n `div` 2) n
