@@ -29,6 +29,7 @@ executable aoc
         bytestring,
         colour,
         containers,
+        deepseq,
         directory,
         exceptions,
         extra,
