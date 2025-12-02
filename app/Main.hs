@@ -18,8 +18,9 @@ import Text.Megaparsec.Char.Lexer qualified as Lex
 
 main :: IO ()
 main =
-    defaultMain . localOption (Always :: UseColor) $
-        testGroup
+    defaultMain
+        . localOption (Always :: UseColor)
+        $ testGroup
             "tests"
             [ puzzleTest puzzle1
             ]
