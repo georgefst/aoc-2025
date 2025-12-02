@@ -34,9 +34,9 @@ puzzleTest p =
         ["examples", "real"] <&> \t ->
             withResource (parseFile $ "inputs/" <> t <> "/" <> pt) mempty \input ->
                 testGroup t $
-                    [("1", p.part1), ("2", p.part2)] <&> \(n, pp) ->
+                    zip (map show [1 :: Int ..]) p.parts <&> \(n, pp) ->
                         goldenVsString n ("outputs/" <> t <> "/" <> pt <> "/" <> n) $
-                            BL.fromStrict . encodeUtf8 . pp.solve <$> input
+                            BL.fromStrict . encodeUtf8 . pp <$> input
   where
     pt = show p.number
     parseFile fp =
@@ -46,11 +46,7 @@ puzzleTest p =
 data Puzzle input = Puzzle
     { number :: Word
     , parser :: Parsec Void Text input
-    , part1 :: Part input
-    , part2 :: Part input
-    }
-data Part input = Part
-    { solve :: input -> Text
+    , parts :: [input -> Text]
     }
 
 puzzle1 :: Puzzle [(Direction, Inc)]
@@ -58,19 +54,15 @@ puzzle1 =
     Puzzle
         { number = 1
         , parser = flip sepEndBy newline $ (,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> Lex.decimal)
-        , part1 =
-            Part
-                { solve =
+        , parts =
+            [
                     T.show
                         . sum
                         . flip evalState 50
                         . traverse \(d, i) -> state \p ->
                             let (_, p') = step i d p
                              in (Count if p' == 0 then 1 else 0, p')
-                }
-        , part2 =
-            Part
-                { solve =
+            ,
                     T.show
                         . sum
                         . flip evalState 50
@@ -84,7 +76,7 @@ puzzle1 =
                                             | p' == 0 -> abs c + 1
                                             | otherwise -> abs c
                              in (c', p')
-                }
+            ]
         }
 
 data Direction = L | R
@@ -109,15 +101,13 @@ puzzle2 =
     Puzzle
         { number = 2
         , parser = (<* newline) $ flip sepBy (char ',') $ (,) <$> (Lex.decimal <* char '-') <*> Lex.decimal
-        , part1 =
-            Part
-                { solve =
+        , parts =
+            [
                     T.show
                         . sum
                         . concatMap
                             (mapMaybe (\n -> guard (isRepetition n) $> n) . uncurry enumFromTo)
-                }
-        , part2 = error "part 2 incomplete"
+            ]
         }
 
 newtype ID = ID Int
