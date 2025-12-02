@@ -23,25 +23,24 @@ main =
     defaultMain
         . localOption (Always :: UseColor)
         . testGroup "tests"
-        $ ["examples", "real"] <&> \s ->
-            testGroup s $
-                puzzleTest s
-                    <$> [ puzzle1
-                        , puzzle2
-                        ]
-
-puzzleTest :: FilePath -> Puzzle -> TestTree
-puzzleTest t Puzzle{number, parser, parts} =
-    withResource (parseFile $ "inputs/" <> t <> "/" <> pt) mempty \input ->
-        testGroup pt $
-            zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
-                goldenVsString n ("outputs/" <> t <> "/" <> pt <> "/" <> n) $
-                    BL.fromStrict . encodeUtf8 . pp <$> input
-  where
-    pt = show number
-    parseFile fp =
-        either (fail . ("parse failure: " <>) . errorBundlePretty) pure . runParser (parser <* eof) fp
-            =<< T.readFile fp
+        $ ["examples", "real"] <&> \t ->
+            testGroup t $
+                [ puzzle1
+                , puzzle2
+                ]
+                    <&> \Puzzle{number, parser, parts} ->
+                        let
+                            pt = show number
+                            parseFile fp =
+                                either (fail . ("parse failure: " <>) . errorBundlePretty) pure
+                                    . runParser (parser <* eof) fp
+                                    =<< T.readFile fp
+                         in
+                            withResource (parseFile $ "inputs/" <> t <> "/" <> pt) mempty \input ->
+                                testGroup pt $
+                                    zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
+                                        goldenVsString n ("outputs/" <> t <> "/" <> pt <> "/" <> n) $
+                                            BL.fromStrict . encodeUtf8 . pp <$> input
 
 data Puzzle = forall input. Puzzle
     { number :: Word
