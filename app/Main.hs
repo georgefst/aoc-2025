@@ -35,29 +35,33 @@ puzzle1 =
                     _ -> Nothing
                 )
                 . lines
-        , part1 = Part { solve =
-            show
-                . sum
-                . flip evalState 50
-                . traverse \(d, i) -> state \p ->
-                    let (_, p') = step i d p
-                     in (Count if p' == 0 then 1 else 0, p')
-            }
-        , part2 = Part { solve =
-            show
-                . sum
-                . flip evalState 50
-                . traverse \(d, i) -> state \p ->
-                    let (c, p') = step i d p
-                        c' = case d of
-                            R -> abs c
-                            L ->
-                                if
-                                    | p == 0 -> abs c - 1
-                                    | p' == 0 -> abs c + 1
-                                    | otherwise -> abs c
-                     in (c', p')
-            }
+        , part1 =
+            Part
+                { solve =
+                    show
+                        . sum
+                        . flip evalState 50
+                        . traverse \(d, i) -> state \p ->
+                            let (_, p') = step i d p
+                             in (Count if p' == 0 then 1 else 0, p')
+                }
+        , part2 =
+            Part
+                { solve =
+                    show
+                        . sum
+                        . flip evalState 50
+                        . traverse \(d, i) -> state \p ->
+                            let (c, p') = step i d p
+                                c' = case d of
+                                    R -> abs c
+                                    L ->
+                                        if
+                                            | p == 0 -> abs c - 1
+                                            | p' == 0 -> abs c + 1
+                                            | otherwise -> abs c
+                             in (c', p')
+                }
         }
 
 data Direction = L | R
