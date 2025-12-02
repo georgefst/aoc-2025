@@ -36,7 +36,9 @@ puzzleTest p =
                             BL.fromStrict . encodeUtf8 . pp.solve <$> input
   where
     pt = show p.number
-    parseFile fp = either (fail . ("parse failure: " <>) . errorBundlePretty) pure . runParser (p.parser <* eof) fp =<< T.readFile fp
+    parseFile fp =
+        either (fail . ("parse failure: " <>) . errorBundlePretty) pure . runParser (p.parser <* eof) fp
+            =<< T.readFile fp
 
 data Puzzle input = Puzzle
     { number :: Word
