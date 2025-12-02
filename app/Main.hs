@@ -28,8 +28,8 @@ puzzleTest p =
             <&> \(inFile, outFile) ->
                 withResource (maybe (fail "parse failure") pure . p.parse =<< readFile ("inputs/" <> inFile <> "/" <> show p.number)) mempty \input ->
                     testGroup outFile $
-                        [(1 :: Word, p.part1), (2, p.part2)] <&> \(n, pp) ->
-                            goldenVsString (show n) ("outputs/" <> outFile <> "/" <> show p.number <> "/" <> show n) $
+                        [("1", p.part1), ("2", p.part2)] <&> \(n, pp) ->
+                            goldenVsString n ("outputs/" <> outFile <> "/" <> show p.number <> "/" <> n) $
                                 BL.fromStrict . encodeUtf8 . pp.solve <$> input
 
 data Puzzle input = Puzzle
