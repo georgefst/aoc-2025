@@ -8,6 +8,10 @@ maintainer: georgefsthomas@gmail.com
 executable aoc
     main-is: Main.hs
     hs-source-dirs: .
+    other-modules:
+        Puzzle
+        Puzzles.Day1
+        Puzzles.Day2
     default-language: GHC2024
     default-extensions:
         BlockArguments
