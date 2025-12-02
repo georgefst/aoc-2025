@@ -55,27 +55,25 @@ puzzle1 =
         { number = 1
         , parser = flip sepEndBy newline $ (,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> Lex.decimal)
         , parts =
-            [
-                    T.show
-                        . sum
-                        . flip evalState 50
-                        . traverse \(d, i) -> state \p ->
-                            let (_, p') = step i d p
-                             in (Count if p' == 0 then 1 else 0, p')
-            ,
-                    T.show
-                        . sum
-                        . flip evalState 50
-                        . traverse \(d, i) -> state \p ->
-                            let (c, p') = step i d p
-                                c' = case d of
-                                    R -> abs c
-                                    L ->
-                                        if
-                                            | p == 0 -> abs c - 1
-                                            | p' == 0 -> abs c + 1
-                                            | otherwise -> abs c
-                             in (c', p')
+            [ T.show
+                . sum
+                . flip evalState 50
+                . traverse \(d, i) -> state \p ->
+                    let (_, p') = step i d p
+                     in (Count if p' == 0 then 1 else 0, p')
+            , T.show
+                . sum
+                . flip evalState 50
+                . traverse \(d, i) -> state \p ->
+                    let (c, p') = step i d p
+                        c' = case d of
+                            R -> abs c
+                            L ->
+                                if
+                                    | p == 0 -> abs c - 1
+                                    | p' == 0 -> abs c + 1
+                                    | otherwise -> abs c
+                     in (c', p')
             ]
         }
 
@@ -102,11 +100,10 @@ puzzle2 =
         { number = 2
         , parser = (<* newline) $ flip sepBy (char ',') $ (,) <$> (Lex.decimal <* char '-') <*> Lex.decimal
         , parts =
-            [
-                    T.show
-                        . sum
-                        . concatMap
-                            (mapMaybe (\n -> guard (isRepetition n) $> n) . uncurry enumFromTo)
+            [ T.show
+                . sum
+                . concatMap
+                    (mapMaybe (\n -> guard (isRepetition n) $> n) . uncurry enumFromTo)
             ]
         }
 
