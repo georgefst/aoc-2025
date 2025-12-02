@@ -21,13 +21,15 @@ main =
 
 puzzleTest :: Puzzle a -> TestTree
 puzzleTest p =
-    testGroup (show p.number) $
+    testGroup pt $
         ["examples", "real"] <&> \t ->
-            withResource (maybe (fail "parse failure") pure . p.parse =<< readFile ("inputs/" <> t <> "/" <> show p.number)) mempty \input ->
+            withResource (maybe (fail "parse failure") pure . p.parse =<< readFile ("inputs/" <> t <> "/" <> pt)) mempty \input ->
                 testGroup t $
                     [("1", p.part1), ("2", p.part2)] <&> \(n, pp) ->
-                        goldenVsString n ("outputs/" <> t <> "/" <> show p.number <> "/" <> n) $
+                        goldenVsString n ("outputs/" <> t <> "/" <> pt <> "/" <> n) $
                             BL.fromStrict . encodeUtf8 . pp.solve <$> input
+  where
+    pt = show p.number
 
 data Puzzle input = Puzzle
     { number :: Word
