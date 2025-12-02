@@ -116,9 +116,14 @@ newtype ID = ID Int
     deriving newtype (Eq, Ord, Show, Num, Enum)
 
 isRepetition2 :: ID -> Bool
-isRepetition2 (T.show -> n) = uncurry (==) $ T.splitAt (T.length n `div` 2) n
+isRepetition2 (T.show -> n) = case T.length n `divMod` 2 of
+    (d, 0) -> equalChunks n d
+    _ -> False
 
 isRepetitionN :: ID -> Bool
-isRepetitionN (T.show -> n) = flip any [1 .. T.length n `div` 2] \i -> case T.chunksOf i n of
-    [] -> False
+isRepetitionN (T.show -> n) = flip any [1 .. T.length n `div` 2] $ equalChunks n
+
+equalChunks :: Text -> Int -> Bool
+equalChunks n i = case T.chunksOf i n of
+    [] -> True
     x : xs -> all (== x) xs
