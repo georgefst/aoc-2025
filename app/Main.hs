@@ -28,7 +28,7 @@ main =
             , puzzleTest puzzle2
             ]
 
-puzzleTest :: Puzzle a -> TestTree
+puzzleTest :: Puzzle -> TestTree
 puzzleTest Puzzle{number, parser, parts} =
     testGroup pt $
         ["examples", "real"] <&> \t ->
@@ -43,13 +43,13 @@ puzzleTest Puzzle{number, parser, parts} =
         either (fail . ("parse failure: " <>) . errorBundlePretty) pure . runParser (parser <* eof) fp
             =<< T.readFile fp
 
-data Puzzle input = Puzzle
+data Puzzle = forall input. Puzzle
     { number :: Word
     , parser :: Parsec Void Text input
     , parts :: [input -> Text]
     }
 
-puzzle1 :: Puzzle [(Direction, Inc)]
+puzzle1 :: Puzzle
 puzzle1 =
     Puzzle
         { number = 1
@@ -94,7 +94,7 @@ step (Inc i) d (Pos p) = bimap Count Pos case d of
     L -> (p - i) `divMod` 100
     R -> (p + i) `divMod` 100
 
-puzzle2 :: Puzzle [(ID, ID)]
+puzzle2 :: Puzzle
 puzzle2 =
     Puzzle
         { number = 2
