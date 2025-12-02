@@ -22,10 +22,11 @@ main :: IO ()
 main =
     defaultMain
         . localOption (Always :: UseColor)
-        $ testGroup
-            "tests"
-            [ puzzleTest puzzle1
-            , puzzleTest puzzle2
+        . testGroup "tests"
+        $ map
+            puzzleTest
+            [ puzzle1
+            , puzzle2
             ]
 
 puzzleTest :: Puzzle -> TestTree
