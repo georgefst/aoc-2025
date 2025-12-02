@@ -51,7 +51,6 @@ data Puzzle input = Puzzle
     }
 data Part input = Part
     { solve :: input -> Text
-    , expected :: Text
     }
 
 puzzle1 :: Puzzle [(Direction, Inc)]
@@ -68,7 +67,6 @@ puzzle1 =
                         . traverse \(d, i) -> state \p ->
                             let (_, p') = step i d p
                              in (Count if p' == 0 then 1 else 0, p')
-                , expected = "3"
                 }
         , part2 =
             Part
@@ -86,7 +84,6 @@ puzzle1 =
                                             | p' == 0 -> abs c + 1
                                             | otherwise -> abs c
                              in (c', p')
-                , expected = "6"
                 }
         }
 
@@ -119,7 +116,6 @@ puzzle2 =
                         . sum
                         . concatMap
                             (mapMaybe (\n -> guard (isRepetition n) $> n) . uncurry enumFromTo)
-                , expected = "1227775554"
                 }
         , part2 = error "part 2 incomplete"
         }
