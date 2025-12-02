@@ -29,7 +29,7 @@ main =
             ]
 
 puzzleTest :: Puzzle a -> TestTree
-puzzleTest Puzzle{..} =
+puzzleTest Puzzle{number, parser, parts} =
     testGroup pt $
         ["examples", "real"] <&> \t ->
             withResource (parseFile $ "inputs/" <> t <> "/" <> pt) mempty \input ->

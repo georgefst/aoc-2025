@@ -13,6 +13,7 @@ executable aoc
         BlockArguments
         DuplicateRecordFields
         MultiWayIf
+        NamedFieldPuns
         NoFieldSelectors
         OverloadedRecordDot
         OverloadedStrings
