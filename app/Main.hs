@@ -23,11 +23,11 @@ puzzleTest :: Puzzle a -> TestTree
 puzzleTest p =
     testGroup (show p.number) $
         ["examples", "real"] <&> \t ->
-                withResource (maybe (fail "parse failure") pure . p.parse =<< readFile ("inputs/" <> t <> "/" <> show p.number)) mempty \input ->
-                    testGroup t $
-                        [("1", p.part1), ("2", p.part2)] <&> \(n, pp) ->
-                            goldenVsString n ("outputs/" <> t <> "/" <> show p.number <> "/" <> n) $
-                                BL.fromStrict . encodeUtf8 . pp.solve <$> input
+            withResource (maybe (fail "parse failure") pure . p.parse =<< readFile ("inputs/" <> t <> "/" <> show p.number)) mempty \input ->
+                testGroup t $
+                    [("1", p.part1), ("2", p.part2)] <&> \(n, pp) ->
+                        goldenVsString n ("outputs/" <> t <> "/" <> show p.number <> "/" <> n) $
+                            BL.fromStrict . encodeUtf8 . pp.solve <$> input
 
 data Puzzle input = Puzzle
     { number :: Word
