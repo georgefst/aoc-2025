@@ -1,0 +1,3 @@
+[submodule "inputs/real"]
+	path = inputs/real
+	url = git@github.com:georgefst/aoc-private-inputs.git
