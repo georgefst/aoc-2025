@@ -29,7 +29,7 @@
         };
         packages = {
           haskell = haskell.packages."aoc:exe:aoc";
-          rust = rust.buildPackage { src = rust.cleanCargoSource ./.; };
+          rust = rust.buildPackage { src = rust.cleanCargoSource ./rust; };
         };
       }
     );
