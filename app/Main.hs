@@ -104,12 +104,21 @@ puzzle2 =
             [ T.show
                 . sum
                 . concatMap
-                    (mapMaybe (\n -> guard (isRepetition n) $> n) . uncurry enumFromTo)
+                    (mapMaybe (\n -> guard (isRepetition2 n) $> n) . uncurry enumFromTo)
+            , T.show
+                . sum
+                . concatMap
+                    (mapMaybe (\n -> guard (isRepetitionN n) $> n) . uncurry enumFromTo)
             ]
         }
 
 newtype ID = ID Int
     deriving newtype (Eq, Ord, Show, Num, Enum)
 
-isRepetition :: ID -> Bool
-isRepetition (T.show -> n) = uncurry (==) $ T.splitAt (T.length n `div` 2) n
+isRepetition2 :: ID -> Bool
+isRepetition2 (T.show -> n) = uncurry (==) $ T.splitAt (T.length n `div` 2) n
+
+isRepetitionN :: ID -> Bool
+isRepetitionN (T.show -> n) = flip any [1 .. T.length n `div` 2] \i -> case T.chunksOf i n of
+    [] -> False
+    x : xs -> all (== x) xs
