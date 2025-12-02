@@ -7,7 +7,7 @@ maintainer: georgefsthomas@gmail.com
 
 executable aoc
     main-is: Main.hs
-    hs-source-dirs: app
+    hs-source-dirs: .
     default-language: GHC2024
     default-extensions:
         BlockArguments
