@@ -1,5 +1,5 @@
 { pkgs, ... }: {
-  name = "aoc-2025";
+  name = "aoc";
   compiler-nix-name = "ghc912";
   shell.tools.cabal = "latest";
   shell.tools.hlint = "latest";
