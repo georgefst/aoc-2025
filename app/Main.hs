@@ -7,9 +7,12 @@ import Data.Functor
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
+import Data.Void
 import Test.Tasty
 import Test.Tasty.Golden (goldenVsString)
-import Text.Read (readMaybe)
+import Text.Megaparsec hiding (Pos)
+import Text.Megaparsec.Char
+import Text.Megaparsec.Char.Lexer qualified as Lex
 
 main :: IO ()
 main =
@@ -30,11 +33,11 @@ puzzleTest p =
                             BL.fromStrict . encodeUtf8 . pp.solve <$> input
   where
     pt = show p.number
-    parseFile fp = maybe (fail "parse failure") pure . p.parse =<< readFile fp
+    parseFile fp = maybe (fail "parse failure") pure . parseMaybe (p.parser <* eof) =<< readFile fp
 
 data Puzzle input = Puzzle
     { number :: Word
-    , parse :: String -> Maybe input
+    , parser :: Parsec Void String input
     , part1 :: Part input
     , part2 :: Part input
     }
@@ -47,14 +50,7 @@ puzzle1 :: Puzzle [(Direction, Inc)]
 puzzle1 =
     Puzzle
         { number = 1
-        , parse =
-            traverse
-                ( \case
-                    'L' : (readMaybe -> Just i) -> Just (L, Inc i)
-                    'R' : (readMaybe -> Just i) -> Just (R, Inc i)
-                    _ -> Nothing
-                )
-                . lines
+        , parser = flip sepEndBy newline $ (,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> Lex.decimal)
         , part1 =
             Part
                 { solve =
