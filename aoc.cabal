@@ -15,6 +15,7 @@ executable aoc
         MultiWayIf
         NoFieldSelectors
         OverloadedRecordDot
+        OverloadedStrings
         ViewPatterns
     ghc-options:
         -Wall
@@ -36,5 +37,8 @@ executable aoc
         safe,
         stm,
         text,
+        tasty,
+        tasty-golden,
+        tasty-hunit,
         time,
         transformers,

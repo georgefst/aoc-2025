@@ -2,24 +2,30 @@ module Main (main) where
 
 import Control.Monad.State
 import Data.Bifunctor
-import Data.Foldable
+import Data.ByteString.Lazy qualified as BL
+import Data.Functor
+import Data.Text (Text)
+import Data.Text qualified as T
+import Data.Text.Encoding (encodeUtf8)
+import Test.Tasty
+import Test.Tasty.Golden (goldenVsString)
 import Text.Read (readMaybe)
 
 main :: IO ()
-main = do
-    runTests puzzle1
+main =
+    defaultMain $
+        testGroup
+            "tests"
+            [ puzzleTest puzzle1
+            ]
 
-runTests :: Puzzle a -> IO ()
-runTests p = do
-    Just input <- p.parse <$> readFile ("inputs/examples/" <> show p.number)
-    for_ [(1 :: Word, p.part1), (2, p.part2)] \(n, pp) ->
-        let r = pp.solve input
-         in putStrLn $
-                show n
-                    <> ": "
-                    <> if r == pp.expected
-                        then "correct!"
-                        else "got " <> r <> ", expected " <> pp.expected
+puzzleTest :: Puzzle a -> TestTree
+puzzleTest p =
+    withResource (maybe (fail "parse failure") pure . p.parse =<< readFile ("inputs/examples/" <> show p.number)) mempty \input ->
+        testGroup (show p.number) $
+            [(1 :: Word, p.part1), (2, p.part2)] <&> \(n, pp) ->
+                goldenVsString (show n) ("outputs/examples/" <> show p.number <> "/" <> show n) $
+                    BL.fromStrict . encodeUtf8 . pp.solve <$> input
 
 data Puzzle input = Puzzle
     { number :: Word
@@ -28,8 +34,8 @@ data Puzzle input = Puzzle
     , part2 :: Part input
     }
 data Part input = Part
-    { solve :: input -> String
-    , expected :: String
+    { solve :: input -> Text
+    , expected :: Text
     }
 
 puzzle1 :: Puzzle [(Direction, Inc)]
@@ -47,7 +53,7 @@ puzzle1 =
         , part1 =
             Part
                 { solve =
-                    show
+                    T.show
                         . sum
                         . flip evalState 50
                         . traverse \(d, i) -> state \p ->
@@ -58,7 +64,7 @@ puzzle1 =
         , part2 =
             Part
                 { solve =
-                    show
+                    T.show
                         . sum
                         . flip evalState 50
                         . traverse \(d, i) -> state \p ->
