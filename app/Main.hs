@@ -23,18 +23,17 @@ main =
     defaultMain
         . localOption (Always :: UseColor)
         . testGroup "tests"
-        $ map
-            puzzleTest
-            [ puzzle1
-            , puzzle2
-            ]
+        $ ["examples", "real"] <&> \s ->
+            testGroup s $
+                puzzleTest s
+                    <$> [ puzzle1
+                        , puzzle2
+                        ]
 
-puzzleTest :: Puzzle -> TestTree
-puzzleTest Puzzle{number, parser, parts} =
-    testGroup pt $
-        ["examples", "real"] <&> \t ->
+puzzleTest :: FilePath -> Puzzle -> TestTree
+puzzleTest t Puzzle{number, parser, parts} =
             withResource (parseFile $ "inputs/" <> t <> "/" <> pt) mempty \input ->
-                testGroup t $
+                testGroup pt $
                     zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
                         goldenVsString n ("outputs/" <> t <> "/" <> pt <> "/" <> n) $
                             BL.fromStrict . encodeUtf8 . pp <$> input
