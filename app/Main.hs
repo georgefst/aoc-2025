@@ -2,17 +2,25 @@ module Main (main) where
 
 import Control.Monad.State
 import Data.Bifunctor
+import Data.Foldable
 import Text.Read (readMaybe)
 
 main :: IO ()
 main = do
-    runPuzzle puzzle1
+    runTests puzzle1
 
-runPuzzle :: Puzzle a -> IO ()
-runPuzzle p = do
+runTests :: Puzzle a -> IO ()
+runTests p = do
     Just input <- p.parse <$> readFile ("inputs/examples/" <> show p.number)
-    putStrLn $ p.part1.solve input
-    putStrLn $ p.part2.solve input
+    for_ [(1 :: Word, p.part1), (2, p.part2)] \(n, pp) ->
+        let r = pp.solve input
+         in putStrLn $
+                show n
+                    <> ": "
+                    <> if r == pp.expected
+                        then "correct!"
+                        else "got " <> r <> ", expected " <> pp.expected
+
 data Puzzle input = Puzzle
     { number :: Word
     , parse :: String -> Maybe input
@@ -21,6 +29,7 @@ data Puzzle input = Puzzle
     }
 data Part input = Part
     { solve :: input -> String
+    , expected :: String
     }
 
 puzzle1 :: Puzzle [(Direction, Inc)]
@@ -44,6 +53,7 @@ puzzle1 =
                         . traverse \(d, i) -> state \p ->
                             let (_, p') = step i d p
                              in (Count if p' == 0 then 1 else 0, p')
+                , expected = "3"
                 }
         , part2 =
             Part
@@ -61,6 +71,7 @@ puzzle1 =
                                             | p' == 0 -> abs c + 1
                                             | otherwise -> abs c
                              in (c', p')
+                , expected = "6"
                 }
         }
 
