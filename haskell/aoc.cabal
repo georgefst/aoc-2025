@@ -29,6 +29,7 @@ executable aoc
         ViewPatterns
     ghc-options:
         -Wall
+        -fdefer-type-errors
     build-depends:
         base >= 4.14,
         async,
