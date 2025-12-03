@@ -1,7 +1,9 @@
 module Puzzles.Day3 (puzzle) where
 
+import Control.Monad.Loops (unfoldrM)
 import Data.Char (digitToInt)
 import Data.Foldable1
+import Data.List.Extra (dropEnd)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1)
 import Data.List.NonEmpty qualified as NE
 import Data.Maybe
@@ -19,7 +21,10 @@ puzzle =
         , parts =
             [ T.show
                 . sum
-                . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries)
+                . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 2)
+            , T.show
+                . sum
+                . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 12)
             ]
         }
 
@@ -29,17 +34,18 @@ newtype Bank = Bank (NonEmpty Battery)
 newtype Battery = Battery Word8
     deriving newtype (Eq, Ord, Show, Num, Enum, Real, Integral)
 
--- returns `Nothing` if list isn't long enough (>= 2)
-maxBatteries :: Bank -> Maybe (Battery, Battery)
-maxBatteries (Bank bs) = do
-    (b1, i) <- findMax <$> nonEmpty (NE.init bs)
-    bs' <- nonEmpty $ NE.drop (i + 1) bs
-    let (b2, _) = findMax bs'
-    pure (b1, b2)
+-- maximal n-digit subsequence
+-- returns `Nothing` if list isn't long enough (>= n)
+maxBatteries :: Int -> Bank -> Maybe [Battery]
+maxBatteries n0 (Bank bs0) = flip unfoldrM (n0, NE.toList bs0) \case
+    (0, _) -> pure Nothing
+    (n, bs) -> do
+        (b, i) <- findMax <$> nonEmpty (dropEnd (n - 1) bs)
+        pure $ Just (b, (n - 1, drop (i + 1) bs))
 
 -- returns the leftmost element in case of a tie
 findMax :: (Ord a) => NonEmpty a -> (a, Int)
 findMax = foldl1' (\m x -> if fst x > fst m then x else m) . flip NE.zip (0 :| [1 ..])
 
-digitsToInt :: (Battery, Battery) -> Int
-digitsToInt (a, b) = fromIntegral $ 10 * a + b
+digitsToInt :: [Battery] -> Int
+digitsToInt = snd . foldr (\b (p, acc) -> (10 * p, acc + fromIntegral b * p)) (1, 0)
