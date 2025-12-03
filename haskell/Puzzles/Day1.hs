@@ -18,22 +18,24 @@ puzzle =
             [ T.show
                 . sum
                 . flip evalState 50
-                . traverse \(d, i) -> state \p ->
-                    let (_, p') = step i d p
-                     in (Count if p' == 0 then 1 else 0, p')
+                . traverse \(d, i) -> do
+                    modify $ snd . step i d
+                    p' <- get
+                    pure $ Count if p' == 0 then 1 else 0
             , T.show
                 . sum
                 . flip evalState 50
-                . traverse \(d, i) -> state \p ->
-                    let (c, p') = step i d p
-                        c' = case d of
-                            R -> abs c
-                            L ->
-                                if
-                                    | p == 0 -> abs c - 1
-                                    | p' == 0 -> abs c + 1
-                                    | otherwise -> abs c
-                     in (c', p')
+                . traverse \(d, i) -> do
+                    p <- get
+                    c <- state $ step i d
+                    p' <- get
+                    pure case d of
+                        R -> abs c
+                        L ->
+                            if
+                                | p == 0 -> abs c - 1
+                                | p' == 0 -> abs c + 1
+                                | otherwise -> abs c
             ]
         }
 
