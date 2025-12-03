@@ -17,9 +17,12 @@ executable aoc
     default-extensions:
         BlockArguments
         DuplicateRecordFields
+        LexicalNegation
         MultiWayIf
         NamedFieldPuns
+        NegativeLiterals
         NoFieldSelectors
+        NoMonomorphismRestriction
         OverloadedRecordDot
         OverloadedStrings
         RecordWildCards
