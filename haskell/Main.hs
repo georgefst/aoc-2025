@@ -7,6 +7,7 @@ import Data.Text.IO qualified as T
 import Puzzle
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day2 qualified as Day2
+import Puzzles.Day3 qualified as Day3
 import Test.Tasty
 import Test.Tasty.Golden (goldenVsString)
 import Test.Tasty.Ingredients.ConsoleReporter
@@ -21,6 +22,7 @@ main =
             testGroup t $
                 [ Day1.puzzle
                 , Day2.puzzle
+                , Day3.puzzle
                 ]
                     <&> \Puzzle{number, parser, parts} ->
                         let
