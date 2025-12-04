@@ -44,6 +44,8 @@ executable aoc
         exceptions,
         extra,
         filepath,
+        linear,
+        massiv,
         megaparsec,
         monad-loops,
         mtl,
