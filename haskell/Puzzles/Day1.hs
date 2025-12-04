@@ -3,7 +3,7 @@ module Puzzles.Day1 (puzzle) where
 import Control.Monad.State
 import Data.Bifunctor
 import Data.Functor
-import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Puzzle
 import Text.Megaparsec hiding (Pos)
 import Text.Megaparsec.Char
@@ -15,14 +15,14 @@ puzzle =
         { number = 1
         , parser = flip sepEndBy newline $ (,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> Lex.decimal)
         , parts =
-            [ T.show
+            [ TL.show
                 . sum
                 . flip evalState 50
                 . traverse \(d, i) -> do
                     modify $ snd . step i d
                     p' <- get
                     pure $ Count if p' == 0 then 1 else 0
-            , T.show
+            , TL.show
                 . sum
                 . flip evalState 50
                 . traverse \(d, i) -> do

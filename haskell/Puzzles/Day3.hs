@@ -7,7 +7,7 @@ import Data.List.Extra (dropEnd)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1)
 import Data.List.NonEmpty qualified as NE
 import Data.Maybe
-import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Data.Word
 import Puzzle
 import Text.Megaparsec
@@ -19,10 +19,10 @@ puzzle =
         { number = 3
         , parser = flip sepEndBy newline $ Bank . fmap (fromIntegral . digitToInt) <$> some1 digitChar
         , parts =
-            [ T.show
+            [ TL.show
                 . sum
                 . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 2)
-            , T.show
+            , TL.show
                 . sum
                 . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 12)
             ]

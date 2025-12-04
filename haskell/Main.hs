@@ -4,8 +4,8 @@ import Data.Bool
 import Data.ByteString.Lazy qualified as BL
 import Data.Functor
 import Data.List.Extra
-import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as T
+import Data.Text.Lazy.Encoding (encodeUtf8)
 import Puzzle
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day2 qualified as Day2
@@ -40,6 +40,6 @@ main =
                                 testGroup pt $
                                     ( zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
                                         goldenVsString n ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
-                                            BL.fromStrict . encodeUtf8 . pp <$> input
+                                            encodeUtf8 . pp <$> input
                                     )
                                         <> [testGroup "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input]

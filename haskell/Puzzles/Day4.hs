@@ -7,6 +7,7 @@ import Data.Functor
 import Data.List.Extra
 import Data.Sequence qualified as Seq
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Linear
 import Puzzle
 import Text.Megaparsec hiding (some)
@@ -18,11 +19,11 @@ puzzle =
         { number = 4
         , parser = flip sepEndBy newline $ some $ asum $ enumerate <&> \t -> char (inToChar t) $> t
         , parts =
-            [ T.show
+            [ TL.show
                 . fst
                 . findAccessible
                 . addCoords
-            , T.show
+            , TL.show
                 . sum
                 . unfoldr ((\r -> guard (fst r /= 0) $> r) . (removeAccessibleRolls <<<<$>>>>) . findAccessible)
                 . addCoords

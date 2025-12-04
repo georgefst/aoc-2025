@@ -5,6 +5,7 @@ import Data.Functor
 import Data.Maybe
 import Data.Text (Text)
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Puzzle
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -16,11 +17,11 @@ puzzle =
         { number = 2
         , parser = (<* newline) $ flip sepBy (char ',') $ (,) <$> (Lex.decimal <* char '-') <*> Lex.decimal
         , parts =
-            [ T.show
+            [ TL.show
                 . sum
                 . concatMap
                     (mapMaybe (\n -> guard (isRepetition2 n) $> n) . uncurry enumFromTo)
-            , T.show
+            , TL.show
                 . sum
                 . concatMap
                     (mapMaybe (\n -> guard (isRepetitionN n) $> n) . uncurry enumFromTo)
