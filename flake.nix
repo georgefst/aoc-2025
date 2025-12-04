@@ -1,11 +1,13 @@
 {
-  inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
-  inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.crane.url = "github:ipetkov/crane";
-  inputs.rust-overlay = {
-    url = "github:oxalica/rust-overlay";
-    inputs.nixpkgs.follows = "nixpkgs";
+  inputs = {
+    haskellNix.url = "github:input-output-hk/haskell.nix";
+    nixpkgs.follows = "haskellNix/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    crane.url = "github:ipetkov/crane";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs = { self, nixpkgs, flake-utils, haskellNix, crane, rust-overlay }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
