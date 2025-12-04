@@ -609,7 +609,28 @@
         "nixpkgs": [
           "haskellNix",
           "nixpkgs-unstable"
+        ],
+        "rust-overlay": "rust-overlay"
+      }
+    },
+    "rust-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
         ]
+      },
+      "locked": {
+        "lastModified": 1764816035,
+        "narHash": "sha256-F0IQSmSj4t2ThkbWZooAhkCTO+YpZSd2Pqiv2uoYEHo=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "74d9abb7c5c030469f90d97a67d127cc5d76c238",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
       }
     },
     "stackage": {

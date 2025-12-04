@@ -3,7 +3,11 @@
   inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.crane.url = "github:ipetkov/crane";
-  outputs = { self, nixpkgs, flake-utils, haskellNix, crane }:
+  inputs.rust-overlay = {
+    url = "github:oxalica/rust-overlay";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+  outputs = { self, nixpkgs, flake-utils, haskellNix, crane, rust-overlay }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
         overlays = [
@@ -15,10 +19,16 @@
                 evalSystem = "x86_64-linux";
               };
           })
+          (import rust-overlay)
         ];
         pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
         haskell = pkgs.hixProject.flake { };
-        rust = crane.mkLib pkgs;
+        rust = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.selectLatestNightlyWith (
+          toolchain: toolchain.default.override {
+            extensions = [ "rust-src" ];
+            targets = [ "x86_64-unknown-linux-gnu" ];
+          }
+        ));
       in
       {
         devShells.default = pkgs.mkShell {
