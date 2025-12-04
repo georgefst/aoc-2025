@@ -9,8 +9,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, nixpkgs, flake-utils, haskellNix, crane, rust-overlay }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
+  outputs =
+    { self
+    , nixpkgs
+    , flake-utils
+    , haskellNix
+    , crane
+    , rust-overlay
+    }:
+    flake-utils.lib.eachSystem [ "x86_64-linux" ]
+      (system:
       let
         overlays = [
           haskellNix.overlay
@@ -44,5 +52,5 @@
           rust = rust.buildPackage { src = rust.cleanCargoSource ./rust; };
         };
       }
-    );
+      );
 }
