@@ -26,6 +26,7 @@ puzzle =
                 . sum
                 . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 12)
             ]
+        , extraTests = []
         }
 
 newtype Bank = Bank (NonEmpty Battery)

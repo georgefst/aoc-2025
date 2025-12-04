@@ -37,6 +37,7 @@ puzzle =
                                 | p' == 0 -> abs c + 1
                                 | otherwise -> abs c
             ]
+        , extraTests = []
         }
 
 data Direction = L | R

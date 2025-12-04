@@ -26,7 +26,7 @@ main =
                 , Day3.puzzle
                 , Day4.puzzle
                 ]
-                    <&> \Puzzle{number, parser, parts} ->
+                    <&> \Puzzle{number, parser, parts, extraTests} ->
                         let
                             pt = show number
                             parseFile fp =
@@ -36,6 +36,9 @@ main =
                          in
                             withResource (parseFile $ "../inputs/" <> t <> "/" <> pt) mempty \input ->
                                 testGroup pt $
+                                    (
                                     zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
                                         goldenVsString n ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
                                             BL.fromStrict . encodeUtf8 . pp <$> input
+                                    )
+                                        <> [testGroup "extra" extraTests]
