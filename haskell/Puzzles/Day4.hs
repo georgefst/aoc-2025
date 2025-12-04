@@ -18,27 +18,41 @@ puzzle =
         { number = 4
         , parser = flip sepEndBy newline $ some $ asum $ enumerate <&> \t -> char (inToChar t) $> t
         , parts =
-            [ \input ->
-                let inputWithCoords = zipWith (map . first . V2) [0 ..] $ map (zip [0 ..]) input
-                    inputSeq = Seq.fromList $ map Seq.fromList input
-                 in T.show
-                        . length
-                        . concatMap (filter (== OutAccessible))
-                        $ inputWithCoords <<&>> \(v, t) -> case t of
-                            InEmpty -> OutEmpty
-                            InRoll ->
-                                if length (filter (== Just InRoll) neighbours) < 4
-                                    then OutAccessible
-                                    else OutRoll
-                              where
-                                neighbours = do
-                                    x <- [-1 .. 1]
-                                    y <- [-1 .. 1]
-                                    guard $ not (x == 0 && y == 0)
-                                    let V2 x' y' = v + V2 x y
-                                    pure $ Seq.lookup x' inputSeq >>= Seq.lookup y'
+            [ T.show
+                . fst
+                . findAccessible
+                . addCoords
+            , T.show
+                . sum
+                . unfoldr ((\r -> guard (fst r /= 0) $> r) . (removeAccessibleRolls <<<<$>>>>) . findAccessible)
+                . addCoords
             ]
         }
+
+addCoords :: (Num a, Enum a) => [[c]] -> [[(V2 a, c)]]
+addCoords = zipWith (map . first . V2) [0 ..] . map (zip [0 ..])
+
+findAccessible :: [[(V2 Int, InTile)]] -> (Int, [[(V2 Int, OutTile)]])
+findAccessible inGrid =
+    let
+        gridSeq = Seq.fromList $ map Seq.fromList inGrid
+        outGrid =
+            inGrid <<&>> \(v, t) -> (v,) case t of
+                InEmpty -> OutEmpty
+                InRoll ->
+                    if length (filter ((== Just InRoll) . fmap snd) neighbours) < 4
+                        then OutAccessible
+                        else OutRoll
+                  where
+                    neighbours = do
+                        x <- [-1 .. 1]
+                        y <- [-1 .. 1]
+                        guard $ not (x == 0 && y == 0)
+                        let V2 x' y' = v + V2 x y
+                        pure $ Seq.lookup x' gridSeq >>= Seq.lookup y'
+        accessibleRolls = length $ concatMap (filter (== OutAccessible) . map snd) outGrid
+     in
+        (accessibleRolls, outGrid)
 
 data InTile
     = InEmpty
@@ -64,7 +78,17 @@ outToChar = \case
 drawGridOut :: [[OutTile]] -> String
 drawGridOut = unlines . map (map outToChar)
 
+removeAccessibleRolls :: OutTile -> InTile
+removeAccessibleRolls = \case
+    OutEmpty -> InEmpty
+    OutRoll -> InRoll
+    OutAccessible -> InEmpty
+
 (<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
 (<<$>>) = fmap . fmap
 (<<&>>) :: (Functor f1, Functor f2) => f1 (f2 a) -> (a -> b) -> f1 (f2 b)
 (<<&>>) = flip (<<$>>)
+(<<<$>>>) :: (Functor f, Functor f1, Functor f2) => (a -> b) -> f (f1 (f2 a)) -> f (f1 (f2 b))
+(<<<$>>>) = fmap . (<<$>>)
+(<<<<$>>>>) :: (Functor f1, Functor f2, Functor f3, Functor f4) => (a -> b) -> f1 (f2 (f3 (f4 a))) -> f1 (f2 (f3 (f4 b)))
+(<<<<$>>>>) = fmap . (<<<$>>>)
