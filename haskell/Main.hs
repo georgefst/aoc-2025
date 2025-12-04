@@ -1,7 +1,9 @@
 module Main (main) where
 
+import Data.Bool
 import Data.ByteString.Lazy qualified as BL
 import Data.Functor
+import Data.List.Extra
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as T
 import Puzzle
@@ -19,7 +21,7 @@ main =
     defaultMain
         . localOption (Always :: UseColor)
         . testGroup "tests"
-        $ ["examples", "real"] <&> \t ->
+        $ enumerate <&> \isRealData@(bool "examples" "real" -> t) ->
             testGroup t $
                 [ Day1.puzzle
                 , Day2.puzzle
@@ -40,4 +42,4 @@ main =
                                         goldenVsString n ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
                                             BL.fromStrict . encodeUtf8 . pp <$> input
                                     )
-                                        <> [testGroup "extra" extraTests]
+                                        <> [testGroup "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input]

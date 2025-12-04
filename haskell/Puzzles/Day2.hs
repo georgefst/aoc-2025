@@ -25,7 +25,7 @@ puzzle =
                 . concatMap
                     (mapMaybe (\n -> guard (isRepetitionN n) $> n) . uncurry enumFromTo)
             ]
-        , extraTests = []
+        , extraTests = mempty
         }
 
 newtype ID = ID Int

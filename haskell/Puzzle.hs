@@ -9,5 +9,5 @@ data Puzzle = forall input. Puzzle
     { number :: Word
     , parser :: Parsec Void Text input
     , parts :: [input -> Text]
-    , extraTests :: [TestTree]
+    , extraTests :: Bool -> FilePath -> IO input -> [TestTree]
     }

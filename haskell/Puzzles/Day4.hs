@@ -27,7 +27,7 @@ puzzle =
                 . unfoldr ((\r -> guard (fst r /= 0) $> r) . (removeAccessibleRolls <<<<$>>>>) . findAccessible)
                 . addCoords
             ]
-        , extraTests = []
+        , extraTests = mempty
         }
 
 addCoords :: (Num a, Enum a) => [[c]] -> [[(V2 a, c)]]
