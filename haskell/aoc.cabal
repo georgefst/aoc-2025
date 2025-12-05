@@ -52,6 +52,7 @@ executable aoc
         pretty-simple,
         safe,
         stm,
+        streams,
         tasty-golden,
         tasty-hunit,
         tasty,
