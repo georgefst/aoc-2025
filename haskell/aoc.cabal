@@ -14,6 +14,7 @@ executable aoc
         Puzzles.Day2
         Puzzles.Day3
         Puzzles.Day4
+        Puzzles.Day5
     default-language: GHC2024
     default-extensions:
         BlockArguments
