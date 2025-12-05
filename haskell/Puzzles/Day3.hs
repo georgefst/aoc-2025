@@ -1,17 +1,7 @@
 module Puzzles.Day3 (puzzle) where
 
-import Control.Monad.Loops (unfoldrM)
-import Data.Char (digitToInt)
-import Data.Foldable1
-import Data.List.Extra (dropEnd)
-import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1)
 import Data.List.NonEmpty qualified as NE
-import Data.Maybe
 import Data.Text.Lazy qualified as TL
-import Data.Word
-import Puzzle
-import Text.Megaparsec
-import Text.Megaparsec.Char (digitChar, newline)
 
 puzzle :: Puzzle
 puzzle =
@@ -38,7 +28,7 @@ newtype Battery = Battery Word8
 -- maximal n-digit subsequence
 -- returns `Nothing` if list isn't long enough (>= n)
 maxBatteries :: Int -> Bank -> Maybe [Battery]
-maxBatteries n0 (Bank bs0) = flip unfoldrM (n0, NE.toList bs0) \case
+maxBatteries n0 (Bank bs0) = flip unfoldrM (n0, toList bs0) \case
     (0, _) -> pure Nothing
     (n, bs) -> do
         (b, i) <- findMax <$> nonEmpty (dropEnd (n - 1) bs)

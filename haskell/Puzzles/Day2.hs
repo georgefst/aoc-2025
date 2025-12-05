@@ -1,21 +1,13 @@
 module Puzzles.Day2 (puzzle) where
 
-import Control.Monad
-import Data.Functor
-import Data.Maybe
-import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Lazy qualified as TL
-import Puzzle
-import Text.Megaparsec
-import Text.Megaparsec.Char
-import Text.Megaparsec.Char.Lexer qualified as Lex
 
 puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 2
-        , parser = (<* newline) $ flip sepBy (char ',') $ (,) <$> (Lex.decimal <* char '-') <*> Lex.decimal
+        , parser = (<* newline) $ flip sepBy (char ',') $ (,) <$> (decimal <* char '-') <*> decimal
         , parts =
             [ TL.show
                 . sum

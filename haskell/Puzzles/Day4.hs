@@ -1,25 +1,10 @@
 module Puzzles.Day4 (puzzle) where
 
-import Control.Applicative
-import Control.Monad
-import Data.Bifunctor
-import Data.Foldable
-import Data.Functor
-import Data.List.Extra
-import Data.Sequence (Seq)
 import Data.Sequence qualified as Seq
-import Data.Stream.Infinite (Stream ((:>)))
 import Data.Stream.Infinite qualified as S
 import Data.Text.Lazy qualified as TL
-import Data.Text.Lazy.Encoding (encodeUtf8)
+import Data.Text.Lazy.Encoding qualified as TL
 import Data.Text.Lazy.IO qualified as TL
-import Linear
-import Puzzle
-import Test.Tasty
-import Test.Tasty.Golden
-import Test.Tasty.HUnit
-import Text.Megaparsec hiding (Stream, some)
-import Text.Megaparsec.Char
 
 puzzle :: Puzzle
 puzzle =
@@ -45,7 +30,7 @@ puzzle =
                     nFrames = if isRealData then 58 else 9
                  in ( [0 .. nFrames] <&> \n ->
                         goldenVsString (show n) (path <> "frames/" <> show n) $
-                            encodeUtf8 . maybe "frame list too short!" drawGrid . Seq.lookup n <$> frames
+                            TL.encodeUtf8 . maybe "frame list too short!" drawGrid . Seq.lookup n <$> frames
                     )
                         <> [ testCase "end" do
                                 Just g <- Seq.lookup nFrames <$> frames
