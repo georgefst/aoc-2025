@@ -12,6 +12,7 @@ module Prelude (
     module Data.Foldable,
     module Data.Foldable1,
     module Data.Functor,
+    module Data.List,
     module Data.List.Extra,
     module Data.List.NonEmpty,
     module Data.Maybe,
@@ -55,7 +56,8 @@ import Data.Char
 import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimumBy)
 import Data.Foldable1
 import Data.Functor
-import Data.List.Extra hiding (foldl1, foldl1', foldr1, head, last, maximum, maximumBy, minimum, minimumBy, unzip, upper)
+import Data.List (sortOn)
+import Data.List.Extra (dropEnd, enumerate)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1)
 import Data.Maybe
 import Data.Ord
