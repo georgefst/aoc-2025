@@ -23,11 +23,8 @@ puzzle =
             [ \(ranges, vals) ->
                 TL.show
                     . length
-                    . map fst
-                    . filter (notNull . snd)
-                    $ map
-                        (\v -> (v, mapMaybe (\r -> guard (isInRange v r) $> r) ranges))
-                        vals
+                    . filter (flip any ranges . isInRange)
+                    $ vals
             ]
         , extraTests = mempty
         }
