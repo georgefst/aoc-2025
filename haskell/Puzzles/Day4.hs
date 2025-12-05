@@ -47,7 +47,7 @@ puzzle =
                         goldenVsString (show n) (path <> "frames/" <> show n) $
                             encodeUtf8 . maybe "frame list too short!" drawGrid . Seq.lookup n <$> frames
                     )
-                        <> [ testCase "nothing accessible in last frame" do
+                        <> [ testCase "end" do
                                 Just g <- Seq.lookup nFrames <$> frames
                                 assertBool "accessible tile found" $ noneAccessible g
                            ]
