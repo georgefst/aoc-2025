@@ -2,6 +2,7 @@ module Puzzles.Day7 (puzzle) where
 
 import Pre
 
+import Data.IntMap qualified as IM
 import Data.IntSet qualified as IS
 import Data.Text.Lazy qualified as TL
 
@@ -28,6 +29,18 @@ puzzle =
                                 pure if hit then [x - 1, x + 1] else [x]
                         )
                         (IS.singleton start)
+            , uncurry \start ->
+                TL.show
+                    . sum
+                    . map snd
+                    . IM.toList
+                    . foldl
+                        ( \beams splitters ->
+                            IM.fromListWith (+) . concat $ flip map (IM.toList beams) \(x, n) -> do
+                                let hit = x `IS.member` splitters
+                                zip (if hit then [x - 1, x + 1] else [x]) (repeat n)
+                        )
+                        (IM.singleton start (1 :: Int))
             ]
         , extraTests = mempty
         }
