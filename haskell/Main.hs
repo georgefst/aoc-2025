@@ -10,6 +10,7 @@ import Puzzles.Day3 qualified as Day3
 import Puzzles.Day4 qualified as Day4
 import Puzzles.Day5 qualified as Day5
 import Puzzles.Day6 qualified as Day6
+import Puzzles.Day7 qualified as Day7
 import Test.Tasty.Ingredients.ConsoleReporter
 
 main :: IO ()
@@ -25,6 +26,7 @@ main =
                 , Day4.puzzle
                 , Day5.puzzle
                 , Day6.puzzle
+                , Day7.puzzle
                 ]
                     <&> \Puzzle{number, parser, parts, extraTests} ->
                         let
