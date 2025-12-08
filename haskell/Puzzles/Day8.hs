@@ -11,7 +11,9 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 8
-        , parser = \isRealData -> (if isRealData then 1000 else 10,) <$> (V3 <$> decimal <* single ',' <*> decimal <* single ',' <*> decimal) `sepEndBy` newline
+        , parser = \isRealData ->
+            (if isRealData then 1000 else 10,)
+                <$> (V3 <$> decimal <* single ',' <*> decimal <* single ',' <*> decimal) `sepEndBy` newline
         , parts =
             [ uncurry \n ->
                 TL.show
