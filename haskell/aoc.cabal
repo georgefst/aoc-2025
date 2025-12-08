@@ -1,20 +1,11 @@
-cabal-version: 3.0
+cabal-version: 3.4
 name: aoc
 version: 0.1.0.0
 license-file: LICENSE
 author: George Thomas
 maintainer: georgefsthomas@gmail.com
 
-executable aoc
-    main-is: Main.hs
-    hs-source-dirs: .
-    other-modules:
-        Prelude
-        Puzzles.Day1
-        Puzzles.Day2
-        Puzzles.Day3
-        Puzzles.Day4
-        Puzzles.Day5
+common common
     default-language: GHC2024
     default-extensions:
         BlockArguments
@@ -59,3 +50,25 @@ executable aoc
         text,
         time,
         transformers,
+
+library utils
+    import: common
+    hs-source-dirs: util
+    exposed-modules:
+        MyPrelude
+
+executable aoc
+    import: common
+    main-is: Main.hs
+    hs-source-dirs: src
+    other-modules:
+        Puzzles.Day1
+        Puzzles.Day2
+        Puzzles.Day3
+        Puzzles.Day4
+        Puzzles.Day5
+    mixins:
+        base hiding (Prelude),
+        aoc:utils (MyPrelude as Prelude),
+    build-depends:
+        aoc:utils,

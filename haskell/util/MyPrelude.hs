@@ -1,6 +1,6 @@
 {-# LANGUAGE PackageImports #-}
 
-module Prelude (
+module MyPrelude (
     module BasePrelude,
     module Control.Applicative,
     module Control.Monad,
