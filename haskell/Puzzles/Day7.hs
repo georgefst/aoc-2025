@@ -10,7 +10,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 7
-        , parser = do
+        , parser = const do
             line1 <- some $ (single '.' $> False) <|> (single 'S' $> True)
             start <- maybe (fail "start not found") (pure . fst) $ find snd $ zip [0 ..] line1
             void newline

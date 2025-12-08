@@ -82,7 +82,7 @@ import Text.Megaparsec.Char.Lexer (decimal)
 
 data Puzzle = forall input. Puzzle
     { number :: Word
-    , parser :: Parsec Void Text input
+    , parser :: Bool -> Parsec Void Text input
     , parts :: [input -> TL.Text]
     , extraTests :: Bool -> FilePath -> IO input -> [TestTree]
     }

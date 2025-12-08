@@ -9,7 +9,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 3
-        , parser = flip sepEndBy newline $ Bank . fmap (fromIntegral . digitToInt) <$> some1 digitChar
+        , parser = const $ flip sepEndBy newline $ Bank . fmap (fromIntegral . digitToInt) <$> some1 digitChar
         , parts =
             [ TL.show
                 . sum

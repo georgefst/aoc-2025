@@ -8,7 +8,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 6
-        , parser = do
+        , parser = const do
             ints <- (hspace *> (decimal `sepBy1` hspace1)) `sepEndBy1` newline
             ops <- ((single '*' $> Multiply) <|> (single '+' $> Add)) `sepEndBy` hspace1
             void newline

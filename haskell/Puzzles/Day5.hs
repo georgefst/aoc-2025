@@ -8,7 +8,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 5
-        , parser = do
+        , parser = const do
             ranges <- flip sepEndBy newline $ Range <$> decimal <* single '-' <*> decimal
             void newline
             vals <- sepEndBy decimal newline

@@ -35,7 +35,7 @@ main =
                             pt = show number
                             parseFile fp =
                                 either (fail . ("parse failure: " <>) . errorBundlePretty) pure
-                                    . runParser (parser <* eof) fp
+                                    . runParser (parser isRealData <* eof) fp
                                     =<< T.readFile fp
                          in
                             withResource (parseFile $ "../inputs/" <> t <> "/" <> pt) mempty \input ->
