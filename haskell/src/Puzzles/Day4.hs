@@ -1,7 +1,5 @@
 module Puzzles.Day4 (puzzle) where
 
-import Pre
-
 import Data.Sequence qualified as Seq
 import Data.Stream.Infinite qualified as S
 import Data.Text.Lazy qualified as TL

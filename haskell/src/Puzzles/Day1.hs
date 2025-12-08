@@ -1,7 +1,5 @@
 module Puzzles.Day1 (puzzle) where
 
-import Pre
-
 import Data.Text.Lazy qualified as TL
 
 puzzle :: Puzzle

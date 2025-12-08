@@ -1,7 +1,5 @@
 module Main (main) where
 
-import Pre
-
 import Data.Text.IO qualified as T
 import Data.Text.Lazy.Encoding qualified as TL
 import Puzzles.Day1 qualified as Day1
