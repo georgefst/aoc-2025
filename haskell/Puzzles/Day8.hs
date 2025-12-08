@@ -24,6 +24,11 @@ puzzle =
                     -- TODO more principled way of distinguishing example and real
                     (!! ((if length boxes == 20 then 10 else if length boxes == 1000 then 1000 else undefined))) $
                         connectBoxes boxes
+            , TL.show
+                . maybe (error "sets never unified") (\((V3 x1 _ _, V3 x2 _ _), _) -> x1 * x2)
+                . lastMay
+                . takeWhile ((> 1) . DS.sets . snd)
+                . connectBoxes
             ]
         , extraTests = mempty
         }

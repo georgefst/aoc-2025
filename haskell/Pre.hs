@@ -25,6 +25,7 @@ module Pre (
     module Data.Void,
     module Data.Word,
     module Linear,
+    module Safe,
     module Test.Tasty,
     module Test.Tasty.Golden,
     module Test.Tasty.HUnit,
@@ -71,6 +72,7 @@ import Data.Traversable
 import Data.Void
 import Data.Word
 import Linear (V2 (..))
+import Safe
 import Test.Tasty
 import Test.Tasty.Golden hiding (Always)
 import Test.Tasty.HUnit
