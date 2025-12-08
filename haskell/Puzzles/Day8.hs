@@ -2,6 +2,7 @@ module Puzzles.Day8 (puzzle) where
 
 import Pre
 
+import Control.Lens
 import Data.DisjointSet qualified as DS
 import Data.Text.Lazy qualified as TL
 import Linear.Metric
@@ -27,7 +28,8 @@ puzzle =
                     . connectBoxes
             , uncurry . const $
                 TL.show
-                    . maybe (error "sets never unified") (\((V3 x1 _ _, V3 x2 _ _), _) -> x1 * x2)
+                    . uncurry ((*) `on` view _x)
+                    . maybe (error "sets never unified") fst
                     . lastMay
                     . takeWhile ((> 1) . DS.sets . snd)
                     . connectBoxes

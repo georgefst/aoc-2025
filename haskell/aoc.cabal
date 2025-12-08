@@ -48,6 +48,7 @@ executable aoc
         exceptions,
         extra,
         filepath,
+        lens,
         linear,
         massiv,
         megaparsec,

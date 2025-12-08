@@ -11,6 +11,7 @@ module Pre (
     module Data.Char,
     module Data.Foldable,
     module Data.Foldable1,
+    module Data.Function,
     module Data.Functor,
     module Data.List,
     module Data.List.Extra,
@@ -57,6 +58,7 @@ import Data.Bool
 import Data.Char
 import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimumBy)
 import Data.Foldable1
+import Data.Function
 import Data.Functor
 import Data.List (sortOn, tails, transpose)
 import Data.List.Extra (dropEnd, enumerate)
