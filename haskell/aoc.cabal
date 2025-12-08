@@ -44,6 +44,7 @@ executable aoc
         containers,
         deepseq,
         directory,
+        disjoint-containers,
         exceptions,
         extra,
         filepath,
