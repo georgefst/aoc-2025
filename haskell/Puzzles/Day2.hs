@@ -9,7 +9,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 2
-        , parser = const $ (<* newline) $ flip sepBy (char ',') $ (,) <$> (decimal <* char '-') <*> decimal
+        , parser = const $ (<* newline) $ ((,) <$> (decimal <* char '-') <*> decimal) `sepBy` (char ',')
         , parts =
             [ TL.show
                 . sum

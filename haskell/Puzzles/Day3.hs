@@ -9,7 +9,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 3
-        , parser = const $ flip sepEndBy newline $ Bank <$> some1 digit
+        , parser = const $ (Bank <$> some1 digit) `sepEndBy` newline
         , parts =
             [ TL.show
                 . sum

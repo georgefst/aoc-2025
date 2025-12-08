@@ -8,7 +8,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 1
-        , parser = const $ flip sepEndBy newline $ (,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> decimal)
+        , parser = const $ ((,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> decimal)) `sepEndBy` newline
         , parts =
             [ TL.show
                 . sum

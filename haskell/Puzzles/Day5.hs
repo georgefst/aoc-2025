@@ -9,9 +9,9 @@ puzzle =
     Puzzle
         { number = 5
         , parser = const do
-            ranges <- flip sepEndBy newline $ Range <$> decimal <* single '-' <*> decimal
+            ranges <- (Range <$> decimal <* single '-' <*> decimal) `sepEndBy` newline
             void newline
-            vals <- sepEndBy decimal newline
+            vals <- decimal `sepEndBy` newline
             pure (ranges, vals)
         , parts =
             [ \(ranges, vals) ->

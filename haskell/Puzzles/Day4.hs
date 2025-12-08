@@ -12,7 +12,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 4
-        , parser = const $ flip sepEndBy newline $ some $ asum $ enumerate <&> \t -> char (inToChar t) $> t
+        , parser = const $ (some $ asum $ enumerate <&> \t -> char (inToChar t) $> t) `sepEndBy` newline
         , parts =
             [ TL.show
                 . (\g -> countRolls g - countRolls (removeAccessibleRolls $ findAccessible g))
