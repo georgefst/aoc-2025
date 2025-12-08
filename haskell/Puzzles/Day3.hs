@@ -9,7 +9,7 @@ puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 3
-        , parser = const $ flip sepEndBy newline $ Bank . fmap (fromIntegral . digitToInt) <$> some1 digitChar
+        , parser = const $ flip sepEndBy newline $ Bank <$> some1 digit
         , parts =
             [ TL.show
                 . sum
@@ -39,6 +39,3 @@ maxBatteries n0 (Bank bs0) = flip unfoldrM (n0, toList bs0) \case
 -- returns the leftmost element in case of a tie
 findMax :: (Ord a) => NonEmpty a -> (a, Int)
 findMax = foldl1' (\m x -> if fst x > fst m then x else m) . flip NE.zip (0 :| [1 ..])
-
-digitsToInt :: [Battery] -> Int
-digitsToInt = snd . foldr (\b (p, acc) -> (10 * p, acc + fromIntegral b * p)) (1, 0)

@@ -34,6 +34,8 @@ module Pre (
     module Text.Megaparsec.Char,
     module Text.Megaparsec.Char.Lexer,
     Puzzle (..),
+    digit,
+    digitsToInt,
 )
 where
 
@@ -61,7 +63,7 @@ import Data.Foldable1
 import Data.Function
 import Data.Functor
 import Data.List (sortOn, tails, transpose)
-import Data.List.Extra (dropEnd, enumerate)
+import Data.List.Extra (dropEnd, enumerate, notNull, splitOn)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1)
 import Data.Maybe
 import Data.Ord
@@ -88,3 +90,9 @@ data Puzzle = forall input. Puzzle
     , parts :: [input -> TL.Text]
     , extraTests :: Bool -> FilePath -> IO input -> [TestTree]
     }
+
+digit :: (Token s ~ Char, Num b, MonadParsec e s f) => f b
+digit = fromIntegral . digitToInt <$> digitChar
+
+digitsToInt :: (Integral a) => [a] -> Int
+digitsToInt = snd . foldr (\b (p, acc) -> (10 * p, acc + fromIntegral b * p)) (1, 0)

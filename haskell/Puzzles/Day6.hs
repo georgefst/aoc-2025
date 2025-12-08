@@ -9,14 +9,24 @@ puzzle =
     Puzzle
         { number = 6
         , parser = const do
-            ints <- (hspace *> (decimal `sepBy1` hspace1)) `sepEndBy1` newline
+            ints <- some ((Just <$> digit) <|> (single ' ' $> Nothing)) `sepEndBy1` newline
             ops <- ((single '*' $> Multiply) <|> (single '+' $> Add)) `sepEndBy` hspace1
             void newline
-            pure (ops, transpose ints)
+            pure (ops, ints)
         , parts =
             [ TL.show
                 . sum
-                . uncurry (zipWith \op -> foldl' (apply op) (unit op))
+                . uncurry (zipWith applyToList)
+                . second (transpose . map (map (digitsToInt @Int . catMaybes) . filter notNull . splitOn [Nothing]))
+            , TL.show
+                . sum
+                . uncurry (zipWith applyToList)
+                . second
+                    ( map catMaybes
+                        . splitOn [Nothing]
+                        . map (\l -> if all isNothing l then Nothing else Just $ digitsToInt @Int $ catMaybes l)
+                        . transpose
+                    )
             ]
         , extraTests = mempty
         }
@@ -31,3 +41,5 @@ unit :: Op -> Int
 unit = \case
     Add -> 0
     Multiply -> 1
+applyToList :: Op -> [Int] -> Int
+applyToList op = foldl' (apply op) (unit op)
