@@ -21,6 +21,7 @@ module Pre (
     module Data.Stream.Infinite,
     module Data.Text,
     module Data.Text.Encoding,
+    module Data.Traversable,
     module Data.Void,
     module Data.Word,
     module Linear,
@@ -66,6 +67,7 @@ import Data.Stream.Infinite (Stream ((:>)))
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.Lazy qualified as TL
+import Data.Traversable
 import Data.Void
 import Data.Word
 import Linear (V2 (..))
