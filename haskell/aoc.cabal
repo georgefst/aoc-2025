@@ -51,24 +51,14 @@ common common
         time,
         transformers,
 
-library prelude
-    import: common
-    hs-source-dirs: prelude
-    exposed-modules:
-        Pre
-
 executable aoc
     import: common
     main-is: Main.hs
     hs-source-dirs: src
     other-modules:
+        Prelude
         Puzzles.Day1
         Puzzles.Day2
         Puzzles.Day3
         Puzzles.Day4
         Puzzles.Day5
-    mixins:
-        base hiding (Prelude),
-        aoc:prelude (Pre as Prelude),
-    build-depends:
-        aoc:prelude,
