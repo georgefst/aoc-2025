@@ -1,21 +1,15 @@
 module Main (main) where
 
-import Data.Bool
-import Data.ByteString.Lazy qualified as BL
-import Data.Functor
-import Data.List.Extra
+import Pre
+
 import Data.Text.IO qualified as T
-import Data.Text.Lazy.Encoding (encodeUtf8)
-import Puzzle
+import Data.Text.Lazy.Encoding qualified as TL
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day2 qualified as Day2
 import Puzzles.Day3 qualified as Day3
 import Puzzles.Day4 qualified as Day4
 import Puzzles.Day5 qualified as Day5
-import Test.Tasty
-import Test.Tasty.Golden (goldenVsString)
 import Test.Tasty.Ingredients.ConsoleReporter
-import Text.Megaparsec hiding (Pos)
 
 main :: IO ()
 main =
@@ -42,6 +36,6 @@ main =
                                 testGroup pt $
                                     ( zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
                                         goldenVsString n ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
-                                            encodeUtf8 . pp <$> input
+                                            TL.encodeUtf8 . pp <$> input
                                     )
                                         <> [testGroup "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input]

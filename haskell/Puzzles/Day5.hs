@@ -1,22 +1,17 @@
 module Puzzles.Day5 (puzzle) where
 
-import Control.Monad
-import Data.List
-import Data.Ord
+import Pre
+
 import Data.Text.Lazy qualified as TL
-import Puzzle
-import Text.Megaparsec hiding (some)
-import Text.Megaparsec.Char
-import Text.Megaparsec.Char.Lexer qualified as Lex
 
 puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 5
         , parser = do
-            ranges <- flip sepEndBy newline $ Range <$> Lex.decimal <* single '-' <*> Lex.decimal
+            ranges <- flip sepEndBy newline $ Range <$> decimal <* single '-' <*> decimal
             void newline
-            vals <- sepEndBy Lex.decimal newline
+            vals <- sepEndBy decimal newline
             pure (ranges, vals)
         , parts =
             [ \(ranges, vals) ->

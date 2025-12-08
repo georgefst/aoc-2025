@@ -9,7 +9,7 @@ executable aoc
     main-is: Main.hs
     hs-source-dirs: .
     other-modules:
-        Puzzle
+        Pre
         Puzzles.Day1
         Puzzles.Day2
         Puzzles.Day3
