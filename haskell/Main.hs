@@ -43,7 +43,7 @@ main =
                             withResource (parseFile $ "../inputs/" <> t <> "/" <> pt) mempty \input ->
                                 testGroup pt $
                                     ( zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
-                                        goldenVsString n ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
+                                        goldenVsStringDiff n diffCommand ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
                                             TL.encodeUtf8 . pp <$> input
                                     )
                                         <> [testGroup "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input]

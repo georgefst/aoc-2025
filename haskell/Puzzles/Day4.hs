@@ -31,7 +31,7 @@ puzzle =
                 let frames = Seq.fromList . takeUntil noneAccessible . fmap snd . generateFrames . mkGrid <$> input
                     nFrames = if isRealData then 58 else 9
                  in ( [0 .. nFrames] <&> \n ->
-                        goldenVsString (show n) (path <> "frames/" <> show n) $
+                        goldenVsStringDiff (show n) diffCommand (path <> "frames/" <> show n) $
                             TL.encodeUtf8 . maybe "frame list too short!" drawGrid . Seq.lookup n <$> frames
                     )
                         <> [ testCase "end" do

@@ -41,6 +41,7 @@ module Pre (
     allUnorderedPairs,
     adjacentPairs,
     sortPair,
+    diffCommand,
 )
 where
 
@@ -122,3 +123,6 @@ adjacentPairs = \case
 
 sortPair :: (Ord a) => (a, a) -> (a, a)
 sortPair (a, b) = if a <= b then (a, b) else (b, a)
+
+diffCommand :: FilePath -> FilePath -> [String]
+diffCommand a b = ["diff", "--color=always", a, b]
