@@ -23,6 +23,7 @@ module Pre (
     module Data.Text,
     module Data.Text.Encoding,
     module Data.Traversable,
+    module Data.Tuple.Extra,
     module Data.Void,
     module Data.Word,
     module Linear,
@@ -38,6 +39,8 @@ module Pre (
     digitsToInt,
     listIndex,
     allUnorderedPairs,
+    adjacentPairs,
+    sortPair,
 )
 where
 
@@ -76,6 +79,7 @@ import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.Lazy qualified as TL
 import Data.Traversable
+import Data.Tuple.Extra ((&&&))
 import Data.Void
 import Data.Word
 import Linear (V2 (..))
@@ -110,3 +114,11 @@ listIndex n =
 
 allUnorderedPairs :: Bool -> [a] -> [(a, a)]
 allUnorderedPairs diagonals = concat . join (zipWith (flip $ map . (,)) . (bool tail toList diagonals) . tails)
+
+adjacentPairs :: [b] -> [(b, b)]
+adjacentPairs = \case
+    [] -> []
+    x : xs -> zip (x : xs) xs
+
+sortPair :: (Ord a) => (a, a) -> (a, a)
+sortPair (a, b) = if a <= b then (a, b) else (b, a)
