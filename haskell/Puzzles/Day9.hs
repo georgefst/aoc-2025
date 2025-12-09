@@ -15,7 +15,7 @@ puzzle =
                 . fmap ((\(V2 x y) -> x * y) . (+ 1) . fmap abs . uncurry (-))
                 . fromMaybe (error "empty input")
                 . nonEmpty
-                . allUnorderedPairs
+                . allUnorderedPairs False
             ]
         , extraTests = mempty
         }

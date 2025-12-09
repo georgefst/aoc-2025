@@ -108,5 +108,5 @@ listIndex n =
             [] -> Nothing
             x : xs -> if n == 0 then Just x else listIndex (n - 1) xs
 
-allUnorderedPairs :: [a] -> [(a, a)]
-allUnorderedPairs = concat . join (zipWith (flip $ map . (,)) . tail . tails)
+allUnorderedPairs :: Bool -> [a] -> [(a, a)]
+allUnorderedPairs diagonals = concat . join (zipWith (flip $ map . (,)) . (bool tail toList diagonals) . tails)

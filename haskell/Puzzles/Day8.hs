@@ -40,4 +40,4 @@ puzzle =
 connectBoxes :: [V3 Int] -> [((V3 Int, V3 Int), DS.DisjointSet (V3 Int))]
 connectBoxes boxes = zip allPairs $ scanl (flip $ uncurry DS.union) (foldMap DS.singleton boxes) allPairs
   where
-    allPairs = sortOn (quadrance . uncurry (-)) $ allUnorderedPairs boxes
+    allPairs = sortOn (quadrance . uncurry (-)) $ allUnorderedPairs False boxes
