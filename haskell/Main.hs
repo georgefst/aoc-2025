@@ -45,6 +45,6 @@ main =
                                 testGroup pt $
                                     ( zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
                                         goldenVsStringDiff n diffCommand ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
-                                            TL.encodeUtf8 . TL.show . pp <$> input
+                                            TL.encodeUtf8 . (<> "\n") . TL.show . pp <$> input
                                     )
                                         <> [testGroup "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input]
