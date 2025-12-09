@@ -64,9 +64,9 @@ import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimu
 import Data.Foldable1
 import Data.Function
 import Data.Functor
-import Data.List (sortOn, tails, transpose)
+import Data.List (sortOn, transpose)
 import Data.List.Extra (dropEnd, enumerate, notNull, splitOn)
-import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1)
+import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1, tail, tails)
 import Data.Maybe
 import Data.Ord
 import Data.Sequence (Seq)

@@ -8,6 +8,8 @@ import Data.Text.Lazy qualified as TL
 import Linear.Metric
 import Linear.V3
 
+import Prelude hiding (tail)
+
 puzzle :: Puzzle
 puzzle =
     Puzzle
@@ -40,7 +42,7 @@ puzzle =
 connectBoxes :: [V3 Int] -> [((V3 Int, V3 Int), DS.DisjointSet (V3 Int))]
 connectBoxes boxes = zip allPairs $ scanl (flip $ uncurry DS.union) (foldMap DS.singleton boxes) allPairs
   where
-    allPairs = sortOn (quadrance . uncurry (-)) $ filter (uncurry (/=)) $ allUnorderedPairs boxes
+    allPairs = sortOn (quadrance . uncurry (-)) $ allUnorderedPairs boxes
 
 allUnorderedPairs :: [a] -> [(a, a)]
-allUnorderedPairs = concat . join (zipWith (flip $ map . (,)) . tails)
+allUnorderedPairs = concat . join (zipWith (flip $ map . (,)) . tail . tails)
