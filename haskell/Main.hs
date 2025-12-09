@@ -3,6 +3,7 @@ module Main (main) where
 import Pre
 
 import Data.Text.IO qualified as T
+import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day2 qualified as Day2
@@ -44,6 +45,6 @@ main =
                                 testGroup pt $
                                     ( zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
                                         goldenVsStringDiff n diffCommand ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
-                                            TL.encodeUtf8 . pp <$> input
+                                            TL.encodeUtf8 . TL.show . pp <$> input
                                     )
                                         <> [testGroup "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input]

@@ -4,7 +4,6 @@ import Pre
 
 import Control.Lens
 import Data.DisjointSet qualified as DS
-import Data.Text.Lazy qualified as TL
 import Linear.Metric
 import Linear.V3
 
@@ -17,8 +16,7 @@ puzzle =
                 <$> (V3 <$> decimal <* single ',' <*> decimal <* single ',' <*> decimal) `sepEndBy` newline
         , parts =
             [ uncurry \n ->
-                TL.show
-                    . product
+                product
                     . take 3
                     . sortOn Down
                     . map length
@@ -27,8 +25,7 @@ puzzle =
                     . listIndex n
                     . connectBoxes
             , uncurry . const $
-                TL.show
-                    . uncurry ((*) `on` view _x)
+                uncurry ((*) `on` view _x)
                     . maybe (error "sets never unified") fst
                     . lastMay
                     . takeWhile ((> 1) . DS.sets . snd)

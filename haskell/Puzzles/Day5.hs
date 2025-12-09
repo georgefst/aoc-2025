@@ -2,8 +2,6 @@ module Puzzles.Day5 (puzzle) where
 
 import Pre
 
-import Data.Text.Lazy qualified as TL
-
 puzzle :: Puzzle
 puzzle =
     Puzzle
@@ -15,12 +13,10 @@ puzzle =
             pure (ranges, vals)
         , parts =
             [ \(ranges, vals) ->
-                TL.show
-                    . length
+                length
                     . filter (flip any ranges . isInRange)
                     $ vals
-            , TL.show
-                . sum
+            , sum
                 . map rangeLength
                 . foldr addInterval []
                 . sortOn (Down . (.lower))

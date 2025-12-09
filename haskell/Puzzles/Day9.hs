@@ -2,16 +2,13 @@ module Puzzles.Day9 (puzzle) where
 
 import Pre
 
-import Data.Text.Lazy qualified as TL
-
 puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 9
         , parser = const $ (V2 <$> decimal <* single ',' <*> decimal) `sepEndBy1` newline
         , parts =
-            [ TL.show
-                . maximum
+            [ maximum
                 . fmap (squareSize . uncurry Square)
                 . fromMaybe (error "input too small")
                 . nonEmpty
@@ -23,8 +20,7 @@ puzzle =
                             $ (last points', head points') :| adjacentPairs points
                       where
                         points' = fromMaybe (error "empty input") $ nonEmpty points
-                 in TL.show
-                        . snd
+                 in snd
                         . fromMaybe (error "no solutions")
                         . find (not . flip any path . lineIntersectsSquare . fst)
                         . sortOn (Down . snd)

@@ -2,23 +2,19 @@ module Puzzles.Day1 (puzzle) where
 
 import Pre
 
-import Data.Text.Lazy qualified as TL
-
 puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 1
         , parser = const $ ((,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> decimal)) `sepEndBy` newline
         , parts =
-            [ TL.show
-                . sum
+            [ sum
                 . flip evalState 50
                 . traverse \(d, i) -> do
                     modify $ snd . step i d
                     p' <- get
                     pure $ Count if p' == 0 then 1 else 0
-            , TL.show
-                . sum
+            , sum
                 . flip evalState 50
                 . traverse \(d, i) -> do
                     p <- get

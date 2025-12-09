@@ -78,7 +78,6 @@ import Data.Sequence (Seq)
 import Data.Stream.Infinite (Stream ((:>)))
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
-import Data.Text.Lazy qualified as TL
 import Data.Traversable
 import Data.Tuple.Extra ((&&&))
 import Data.Void
@@ -92,10 +91,10 @@ import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
 
-data Puzzle = forall input. Puzzle
+data Puzzle = forall input output. (Show output) => Puzzle
     { number :: Word
     , parser :: Bool -> Parsec Void Text input
-    , parts :: [input -> TL.Text]
+    , parts :: [input -> output]
     , extraTests :: Bool -> FilePath -> IO input -> [TestTree]
     }
 

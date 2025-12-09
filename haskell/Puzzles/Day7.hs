@@ -4,7 +4,6 @@ import Pre
 
 import Data.IntMap qualified as IM
 import Data.IntSet qualified as IS
-import Data.Text.Lazy qualified as TL
 
 puzzle :: Puzzle
 puzzle =
@@ -19,8 +18,7 @@ puzzle =
             pure (start, splitters)
         , parts =
             [ uncurry \start ->
-                TL.show
-                    . flip execState (0 :: Int)
+                flip execState (0 :: Int)
                     . foldlM
                         ( \beams splitters ->
                             IS.fromList . concat <$> for (IS.toList beams) \x -> do
@@ -30,8 +28,7 @@ puzzle =
                         )
                         (IS.singleton start)
             , uncurry \start ->
-                TL.show
-                    . sum
+                sum
                     . map snd
                     . IM.toList
                     . foldl

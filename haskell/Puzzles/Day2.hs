@@ -3,7 +3,6 @@ module Puzzles.Day2 (puzzle) where
 import Pre
 
 import Data.Text qualified as T
-import Data.Text.Lazy qualified as TL
 
 puzzle :: Puzzle
 puzzle =
@@ -11,12 +10,10 @@ puzzle =
         { number = 2
         , parser = const $ (<* newline) $ ((,) <$> (decimal <* char '-') <*> decimal) `sepBy` (char ',')
         , parts =
-            [ TL.show
-                . sum
+            [ sum
                 . concatMap
                     (mapMaybe (\n -> guard (isRepetition2 n) $> n) . uncurry enumFromTo)
-            , TL.show
-                . sum
+            , sum
                 . concatMap
                     (mapMaybe (\n -> guard (isRepetitionN n) $> n) . uncurry enumFromTo)
             ]

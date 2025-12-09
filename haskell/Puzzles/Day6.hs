@@ -2,8 +2,6 @@ module Puzzles.Day6 (puzzle) where
 
 import Pre
 
-import Data.Text.Lazy qualified as TL
-
 puzzle :: Puzzle
 puzzle =
     Puzzle
@@ -14,12 +12,10 @@ puzzle =
             void newline
             pure (ops, ints)
         , parts =
-            [ TL.show
-                . sum
+            [ sum
                 . uncurry (zipWith applyToList)
                 . second (transpose . map (map (digitsToInt @Int . catMaybes) . filter notNull . splitOn [Nothing]))
-            , TL.show
-                . sum
+            , sum
                 . uncurry (zipWith applyToList)
                 . second
                     ( map catMaybes

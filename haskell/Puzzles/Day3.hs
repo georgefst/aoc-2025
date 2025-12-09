@@ -3,7 +3,6 @@ module Puzzles.Day3 (puzzle) where
 import Pre
 
 import Data.List.NonEmpty qualified as NE
-import Data.Text.Lazy qualified as TL
 
 puzzle :: Puzzle
 puzzle =
@@ -11,11 +10,9 @@ puzzle =
         { number = 3
         , parser = const $ (Bank <$> some1 digit) `sepEndBy` newline
         , parts =
-            [ TL.show
-                . sum
+            [ sum
                 . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 2)
-            , TL.show
-                . sum
+            , sum
                 . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 12)
             ]
         , extraTests = mempty
