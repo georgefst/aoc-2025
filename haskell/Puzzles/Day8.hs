@@ -8,8 +8,6 @@ import Data.Text.Lazy qualified as TL
 import Linear.Metric
 import Linear.V3
 
-import Prelude hiding (tail)
-
 puzzle :: Puzzle
 puzzle =
     Puzzle

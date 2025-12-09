@@ -27,6 +27,7 @@ executable aoc
         NamedFieldPuns
         NegativeLiterals
         NoFieldSelectors
+        NoImplicitPrelude
         NoMonomorphismRestriction
         OverloadedRecordDot
         OverloadedStrings
