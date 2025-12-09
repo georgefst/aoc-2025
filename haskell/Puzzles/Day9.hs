@@ -13,7 +13,7 @@ puzzle =
             [ TL.show
                 . maximum
                 . fmap ((\(V2 x y) -> x * y) . (+ 1) . fmap abs . uncurry (-))
-                . fromMaybe (error "empty input")
+                . fromMaybe (error "input too small")
                 . nonEmpty
                 . allUnorderedPairs False
             ]
