@@ -9,7 +9,7 @@ puzzle =
         , parser = const $ (V2 <$> decimal <* single ',' <*> decimal) `sepEndBy1` newline
         , parts =
             [ maximum
-                . fmap (squareSize . uncurry Square)
+                . fmap (squareSize . uncurry Rectangle)
                 . fromMaybe (error "input too small")
                 . nonEmpty
                 . allUnorderedPairs False
@@ -24,19 +24,19 @@ puzzle =
                         . fromMaybe (error "no solutions")
                         . find (not . flip any path . lineIntersectsSquare . fst)
                         . sortOn (Down . snd)
-                        . fmap ((id &&& squareSize) . uncurry Square)
+                        . fmap ((id &&& squareSize) . uncurry Rectangle)
                         $ allUnorderedPairs False points
             ]
         , extraTests = mempty
         }
 
-data Square = Square
+data Rectangle = Rectangle
     { corner1 :: V2 Int
     , corner2 :: V2 Int
     }
     deriving (Show)
-squareSize :: Square -> Int
-squareSize Square{corner1, corner2} = (\(V2 x y) -> x * y) . (+ 1) . fmap abs $ corner1 - corner2
+squareSize :: Rectangle -> Int
+squareSize Rectangle{corner1, corner2} = (\(V2 x y) -> x * y) . (+ 1) . fmap abs $ corner1 - corner2
 
 data Line
     = LineHorizontal {y :: Int, x1 :: Int, x2 :: Int}
@@ -55,10 +55,10 @@ compareToInterval n (Interval l u)
     | n >= u = GT
     | otherwise = EQ
 
-squareIntervals :: Square -> V2 Interval
-squareIntervals Square{corner1, corner2} = uncurry Interval . sortPair <$> liftA2 (,) corner1 corner2
+squareIntervals :: Rectangle -> V2 Interval
+squareIntervals Rectangle{corner1, corner2} = uncurry Interval . sortPair <$> liftA2 (,) corner1 corner2
 
-lineIntersectsSquare :: Square -> Line -> Bool
+lineIntersectsSquare :: Rectangle -> Line -> Bool
 lineIntersectsSquare (squareIntervals -> V2 intervalX intervalY) = \case
     LineHorizontal{y, x1, x2} ->
         compareToInterval y intervalY == EQ
