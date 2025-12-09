@@ -37,6 +37,7 @@ module Pre (
     digit,
     digitsToInt,
     listIndex,
+    allUnorderedPairs,
 )
 where
 
@@ -106,3 +107,6 @@ listIndex n =
         else \case
             [] -> Nothing
             x : xs -> if n == 0 then Just x else listIndex (n - 1) xs
+
+allUnorderedPairs :: [a] -> [(a, a)]
+allUnorderedPairs = concat . join (zipWith (flip $ map . (,)) . tail . tails)
