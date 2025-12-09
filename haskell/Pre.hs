@@ -36,6 +36,7 @@ module Pre (
     Puzzle (..),
     digit,
     digitsToInt,
+    listIndex,
 )
 where
 
@@ -49,6 +50,7 @@ import "base" Prelude as BasePrelude hiding (
     minimum,
     tail,
     unzip,
+    (!!),
  )
 
 import Control.Applicative
@@ -96,3 +98,11 @@ digit = fromIntegral . digitToInt <$> digitChar
 
 digitsToInt :: (Integral a) => [a] -> Int
 digitsToInt = snd . foldr (\b (p, acc) -> (10 * p, acc + fromIntegral b * p)) (1, 0)
+
+listIndex :: Int -> [a] -> Maybe a
+listIndex n =
+    if n < 0
+        then const Nothing
+        else \case
+            [] -> Nothing
+            x : xs -> if n == 0 then Just x else listIndex (n - 1) xs

@@ -23,8 +23,8 @@ puzzle =
                     . sortOn Down
                     . map length
                     . DS.toLists
-                    . snd
-                    . (!! n)
+                    . maybe (error "not enough boxes") snd
+                    . listIndex n
                     . connectBoxes
             , uncurry . const $
                 TL.show
