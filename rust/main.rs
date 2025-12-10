@@ -2,10 +2,11 @@ mod puzzle;
 mod puzzles;
 use crate::puzzle::Puzzle;
 use puzzles::day1;
+use puzzles::day2;
 use std::fmt::Display;
 use std::fs;
 
-const PUZZLES: [&dyn SomePuzzle; 1] = [&day1::PUZZLE];
+const PUZZLES: [&dyn SomePuzzle; 2] = [&day1::PUZZLE, &day2::PUZZLE];
 
 fn main() {
     [false, true].iter().for_each(|is_real_data| {
