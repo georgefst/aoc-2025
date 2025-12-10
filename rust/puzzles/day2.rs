@@ -10,7 +10,7 @@ use nom::{
 
 pub const PUZZLE: Puzzle<Vec<(usize, usize)>, usize, 2> = Puzzle {
     number: 2,
-    parser: |input| -> Vec<(usize, usize)> {
+    parser: |input| {
         terminated(
             terminated(
                 separated_list1(
