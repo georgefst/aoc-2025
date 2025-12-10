@@ -45,6 +45,10 @@
           haskell.devShells.default
           (rust.devShell { })
         ];
+        packages = with pkgs; [
+          bacon
+          ghcid
+        ];
       };
       packages = {
         haskell = haskell.packages."aoc:exe:aoc";
