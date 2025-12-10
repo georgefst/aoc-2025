@@ -26,6 +26,11 @@
             final.haskell-nix.hix.project {
               src = ./.;
               evalSystem = "x86_64-linux";
+              name = "aoc";
+              compiler-nix-name = "ghc912";
+              shell.tools.cabal = "latest";
+              shell.tools.hlint = "latest";
+              shell.tools.haskell-language-server = "latest";
             };
         })
         (import rust-overlay)
