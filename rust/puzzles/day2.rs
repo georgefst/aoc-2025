@@ -1,23 +1,29 @@
 use crate::puzzle::Puzzle;
+use nom::{
+    Parser,
+    character::complete::{char, digit1, newline},
+    combinator::{eof, map_res},
+    error::Error,
+    multi::separated_list1,
+    sequence::{separated_pair, terminated},
+};
 
 pub const PUZZLE: Puzzle<Vec<(usize, usize)>, usize, 2> = Puzzle {
     number: 2,
-    parser: |input| {
-        input
-            .strip_suffix("\n")
-            .unwrap()
-            .split(',')
-            .map(|range| {
-                match range
-                    .split('-')
-                    .map(|n| n.parse().unwrap())
-                    .collect::<Vec<usize>>()[..]
-                {
-                    [a, b] => (a, b),
-                    _ => panic!(),
-                }
-            })
-            .collect()
+    parser: |input| -> Vec<(usize, usize)> {
+        terminated(
+            terminated(
+                separated_list1(
+                    char(','),
+                    separated_pair(parse_int(), char('-'), parse_int()),
+                ),
+                newline,
+            ),
+            eof,
+        )
+        .parse(input)
+        .unwrap()
+        .1
     },
     parts: [
         |input| {
@@ -61,4 +67,8 @@ fn equal_chunks(n: &String, i: usize) -> bool {
         None => true,
         Some(x) => chunks.all(|y| y == x),
     }
+}
+
+fn parse_int<'a>() -> impl Parser<&'a str, Output = usize, Error = Error<&'a str>> {
+    map_res(digit1, |s: &str| s.parse::<usize>())
 }

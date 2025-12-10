@@ -8,3 +8,4 @@ path = "main.rs"
 name = "aoc"
 
 [dependencies]
+nom = "8.0.0"
