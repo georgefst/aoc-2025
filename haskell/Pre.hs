@@ -70,7 +70,7 @@ import Data.Foldable1
 import Data.Function
 import Data.Functor
 import Data.List (sortOn, transpose)
-import Data.List.Extra (dropEnd, enumerate, notNull, splitOn)
+import Data.List.Extra (dropEnd, enumerate, firstJust, notNull, splitOn)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1, tail, tails)
 import Data.Maybe
 import Data.Ord
