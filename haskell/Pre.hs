@@ -102,7 +102,7 @@ digit :: (Token s ~ Char, Num b, MonadParsec e s f) => f b
 digit = fromIntegral . digitToInt <$> digitChar
 
 digitsToInt :: (Integral a) => [a] -> Int
-digitsToInt = snd . foldr (\b (p, acc) -> (10 * p, acc + fromIntegral b * p)) (1, 0)
+digitsToInt = foldl' (\acc d -> acc * 10 + fromIntegral d) 0
 
 listIndex :: Int -> [a] -> Maybe a
 listIndex n =
