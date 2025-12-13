@@ -6,6 +6,7 @@ import Data.Text.IO qualified as T
 import Data.Text.Lazy qualified as TL
 import Data.Text.Lazy.Encoding qualified as TL
 import Puzzles.Day1 qualified as Day1
+import Puzzles.Day10 qualified as Day10
 import Puzzles.Day2 qualified as Day2
 import Puzzles.Day3 qualified as Day3
 import Puzzles.Day4 qualified as Day4
@@ -14,7 +15,6 @@ import Puzzles.Day6 qualified as Day6
 import Puzzles.Day7 qualified as Day7
 import Puzzles.Day8 qualified as Day8
 import Puzzles.Day9 qualified as Day9
-import Puzzles.Day10 qualified as Day10
 import Test.Tasty.Ingredients.ConsoleReporter
 
 main :: IO ()
