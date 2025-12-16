@@ -24,6 +24,7 @@ executable aoc
     default-extensions:
         BlockArguments
         DuplicateRecordFields
+        ImpredicativeTypes
         LexicalNegation
         MultiWayIf
         NamedFieldPuns

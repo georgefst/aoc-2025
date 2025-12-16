@@ -17,7 +17,7 @@ puzzle =
             let splitters = map (IS.fromList . map fst . filter snd . zip [0 ..]) rows
             pure (start, splitters)
         , parts =
-            [ uncurry \start ->
+            ( uncurry \start ->
                 flip execState (0 :: Int)
                     . foldlM
                         ( \beams splitters ->
@@ -27,17 +27,19 @@ puzzle =
                                 pure if hit then [x - 1, x + 1] else [x]
                         )
                         (IS.singleton start)
-            , uncurry \start ->
-                sum
-                    . map snd
-                    . IM.toList
-                    . foldl
-                        ( \beams splitters ->
-                            IM.fromListWith (+) . concat $ flip map (IM.toList beams) \(x, n) -> do
-                                let hit = x `IS.member` splitters
-                                zip (if hit then [x - 1, x + 1] else [x]) (repeat n)
-                        )
-                        (IM.singleton start (1 :: Int))
-            ]
+            )
+                /\ ( uncurry \start ->
+                        sum
+                            . map snd
+                            . IM.toList
+                            . foldl
+                                ( \beams splitters ->
+                                    IM.fromListWith (+) . concat $ flip map (IM.toList beams) \(x, n) -> do
+                                        let hit = x `IS.member` splitters
+                                        zip (if hit then [x - 1, x + 1] else [x]) (repeat n)
+                                )
+                                (IM.singleton start (1 :: Int))
+                   )
+                /\ nil
         , extraTests = mempty
         }

@@ -14,11 +14,13 @@ puzzle =
         { number = 4
         , parser = const $ (some $ asum $ enumerate <&> \t -> char (inToChar t) $> t) `sepEndBy` newline
         , parts =
-            [ (\g -> countRolls g - countRolls (removeAccessibleRolls $ findAccessible g))
+            ( (\g -> countRolls g - countRolls (removeAccessibleRolls $ findAccessible g))
                 . mkGrid
-            , (\g -> countRolls g - countRolls (fst $ S.head $ S.filter (noneAccessible . snd) $ generateFrames g))
-                . mkGrid
-            ]
+            )
+                /\ ( (\g -> countRolls g - countRolls (fst $ S.head $ S.filter (noneAccessible . snd) $ generateFrames g))
+                        . mkGrid
+                   )
+                /\ nil
         , extraTests = \isRealData path input ->
             [ testCase "round trip" do
                 t <- TL.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"

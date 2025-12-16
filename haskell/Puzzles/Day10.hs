@@ -23,12 +23,13 @@ puzzle =
             void $ single '}'
             pure (Lights $ IM.fromList $ zip [0 ..] lights, switches)
         , parts =
-            [ sum . map \(lights, switches) ->
+            ( sum . map \(lights, switches) ->
                 maybe (error "no solution") length
                     . firstJust (firstJust (\(s, ls) -> guard (allOff ls) $> s))
                     $ flip iterate [([], lights)] \ls ->
                         concatMap (\s -> map (\(ss, l) -> (s : ss, applySwitch s l)) ls) switches
-            ]
+            )
+                /\ nil
         , extraTests = mempty
         }
 

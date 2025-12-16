@@ -42,6 +42,11 @@ module Pre (
     adjacentPairs,
     sortPair,
     diffCommand,
+    OutputParameterisedFunctionList,
+    mapOutputParameterisedFunctionList,
+    mapWithIndexOutputParameterisedFunctionList,
+    (/\),
+    nil,
 )
 where
 
@@ -69,7 +74,8 @@ import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimu
 import Data.Foldable1
 import Data.Function
 import Data.Functor
-import Data.List (sortOn, transpose)
+import Data.Kind (Constraint, Type)
+import Data.List (List, sortOn, transpose)
 import Data.List.Extra (dropEnd, enumerate, firstJust, notNull, splitOn)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1, tail, tails)
 import Data.Maybe
@@ -91,10 +97,10 @@ import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
 
-data Puzzle = forall input output. (Show output) => Puzzle
+data Puzzle = forall input outputs. Puzzle
     { number :: Word
     , parser :: Bool -> Parsec Void Text input
-    , parts :: [input -> output]
+    , parts :: OutputParameterisedFunctionList Show input outputs
     , extraTests :: Bool -> FilePath -> IO input -> [TestTree]
     }
 
@@ -125,3 +131,35 @@ sortPair (a, b) = if a <= b then (a, b) else (b, a)
 
 diffCommand :: FilePath -> FilePath -> [String]
 diffCommand a b = ["diff", "--color=always", a, b]
+
+infixr 9 /\
+(/\) :: (c output) => (input -> output) -> OutputParameterisedFunctionList c input outputs -> OutputParameterisedFunctionList c input (output : outputs)
+(/\) = OutputParameterisedFunctionListCons
+nil :: OutputParameterisedFunctionList c input '[]
+nil = OutputParameterisedFunctionListNil
+
+data OutputParameterisedFunctionList (c :: Type -> Constraint) (input :: Type) (outputs :: List Type) :: Type where
+    OutputParameterisedFunctionListNil :: OutputParameterisedFunctionList c input '[]
+    OutputParameterisedFunctionListCons ::
+        (c output) =>
+        (input -> output) ->
+        OutputParameterisedFunctionList c input outputs ->
+        OutputParameterisedFunctionList c input (output ': outputs)
+mapOutputParameterisedFunctionList ::
+    (forall output. (c output) => (input -> output) -> a) ->
+    OutputParameterisedFunctionList c input outputs ->
+    [a]
+mapOutputParameterisedFunctionList f = \case
+    OutputParameterisedFunctionListNil -> []
+    OutputParameterisedFunctionListCons x xs -> f x : mapOutputParameterisedFunctionList f xs
+mapWithIndexOutputParameterisedFunctionList ::
+    forall c input outputs a.
+    (forall output. (c output) => Int -> (input -> output) -> a) ->
+    OutputParameterisedFunctionList c input outputs ->
+    [a]
+mapWithIndexOutputParameterisedFunctionList f = go 0
+  where
+    go :: Int -> OutputParameterisedFunctionList c input outputs' -> [a]
+    go i = \case
+        OutputParameterisedFunctionListNil -> []
+        OutputParameterisedFunctionListCons x xs -> f i x : go (i + 1) xs

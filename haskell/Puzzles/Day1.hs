@@ -8,26 +8,29 @@ puzzle =
         { number = 1
         , parser = const $ ((,) <$> ((char 'L' $> L) <|> (char 'R' $> R)) <*> (Inc <$> decimal)) `sepEndBy` newline
         , parts =
-            [ sum
-                . flip evalState 50
-                . traverse \(d, i) -> do
-                    modify $ snd . step i d
-                    p' <- get
-                    pure $ Count if p' == 0 then 1 else 0
-            , sum
-                . flip evalState 50
-                . traverse \(d, i) -> do
-                    p <- get
-                    c <- state $ step i d
-                    p' <- get
-                    pure case d of
-                        R -> abs c
-                        L ->
-                            if
-                                | p == 0 -> abs c - 1
-                                | p' == 0 -> abs c + 1
-                                | otherwise -> abs c
-            ]
+            ( sum
+                . ( flip evalState 50
+                        . traverse \(d, i) -> do
+                            modify $ snd . step i d
+                            p' <- get
+                            pure $ Count if p' == 0 then 1 else 0
+                  )
+            )
+                /\ ( sum
+                        . flip evalState 50
+                        . traverse \(d, i) -> do
+                            p <- get
+                            c <- state $ step i d
+                            p' <- get
+                            pure case d of
+                                R -> abs c
+                                L ->
+                                    if
+                                        | p == 0 -> abs c - 1
+                                        | p' == 0 -> abs c + 1
+                                        | otherwise -> abs c
+                   )
+                /\ nil
         , extraTests = mempty
         }
 

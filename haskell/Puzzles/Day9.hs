@@ -8,25 +8,27 @@ puzzle =
         { number = 9
         , parser = const $ (V2 <$> decimal <* single ',' <*> decimal) `sepEndBy1` newline
         , parts =
-            [ maximum
+            ( maximum
                 . fmap (squareSize . uncurry Rectangle)
                 . fromMaybe (error "input too small")
                 . nonEmpty
                 . allUnorderedPairs False
-            , \points ->
-                let path =
-                        fromMaybe (error "malformed line")
-                            . traverse mkLine
-                            $ (last points', head points') :| adjacentPairs points
-                      where
-                        points' = fromMaybe (error "empty input") $ nonEmpty points
-                 in snd
-                        . fromMaybe (error "no solutions")
-                        . find (not . flip any path . lineIntersectsSquare . fst)
-                        . sortOn (Down . snd)
-                        . fmap ((id &&& squareSize) . uncurry Rectangle)
-                        $ allUnorderedPairs False points
-            ]
+            )
+                /\ ( \points ->
+                        let path =
+                                fromMaybe (error "malformed line")
+                                    . traverse mkLine
+                                    $ (last points', head points') :| adjacentPairs points
+                              where
+                                points' = fromMaybe (error "empty input") $ nonEmpty points
+                         in snd
+                                . fromMaybe (error "no solutions")
+                                . find (not . flip any path . lineIntersectsSquare . fst)
+                                . sortOn (Down . snd)
+                                . fmap ((id &&& squareSize) . uncurry Rectangle)
+                                $ allUnorderedPairs False points
+                   )
+                /\ nil
         , extraTests = mempty
         }
 

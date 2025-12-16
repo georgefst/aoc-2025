@@ -12,18 +12,20 @@ puzzle =
             void newline
             pure (ops, ints)
         , parts =
-            [ sum
+            ( sum
                 . uncurry (zipWith applyToList)
                 . second (transpose . map (map (digitsToInt @Int . catMaybes) . filter notNull . splitOn [Nothing]))
-            , sum
-                . uncurry (zipWith applyToList)
-                . second
-                    ( map catMaybes
-                        . splitOn [Nothing]
-                        . map (\l -> if all isNothing l then Nothing else Just $ digitsToInt @Int $ catMaybes l)
-                        . transpose
-                    )
-            ]
+            )
+                /\ ( sum
+                        . uncurry (zipWith applyToList)
+                        . second
+                            ( map catMaybes
+                                . splitOn [Nothing]
+                                . map (\l -> if all isNothing l then Nothing else Just $ digitsToInt @Int $ catMaybes l)
+                                . transpose
+                            )
+                   )
+                /\ nil
         , extraTests = mempty
         }
 

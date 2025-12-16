@@ -12,16 +12,18 @@ puzzle =
             vals <- decimal `sepEndBy` newline
             pure (ranges, vals)
         , parts =
-            [ \(ranges, vals) ->
+            ( \(ranges, vals) ->
                 length
                     . filter (flip any ranges . isInRange)
                     $ vals
-            , sum
-                . map rangeLength
-                . foldr addInterval []
-                . sortOn (Down . (.lower))
-                . fst
-            ]
+            )
+                /\ ( sum
+                        . map rangeLength
+                        . foldr addInterval []
+                        . sortOn (Down . (.lower))
+                        . fst
+                   )
+                /\ nil
         , extraTests = mempty
         }
 

@@ -15,7 +15,7 @@ puzzle =
             (if isRealData then 1000 else 10,)
                 <$> (V3 <$> decimal <* single ',' <*> decimal <* single ',' <*> decimal) `sepEndBy` newline
         , parts =
-            [ uncurry \n ->
+            ( uncurry \n ->
                 product
                     . take 3
                     . sortOn Down
@@ -24,13 +24,15 @@ puzzle =
                     . maybe (error "not enough boxes") snd
                     . listIndex n
                     . connectBoxes
-            , uncurry . const $
-                uncurry ((*) `on` view _x)
-                    . maybe (error "sets never unified") fst
-                    . lastMay
-                    . takeWhile ((> 1) . DS.sets . snd)
-                    . connectBoxes
-            ]
+            )
+                /\ ( uncurry . const $
+                        uncurry ((*) `on` view _x)
+                            . maybe (error "sets never unified") fst
+                            . lastMay
+                            . takeWhile ((> 1) . DS.sets . snd)
+                            . connectBoxes
+                   )
+                /\ nil
         , extraTests = mempty
         }
 

@@ -10,11 +10,13 @@ puzzle =
         { number = 3
         , parser = const $ (Bank <$> some1 digit) `sepEndBy` newline
         , parts =
-            [ sum
+            ( sum
                 . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 2)
-            , sum
-                . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 12)
-            ]
+            )
+                /\ ( sum
+                        . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 12)
+                   )
+                /\ nil
         , extraTests = mempty
         }
 

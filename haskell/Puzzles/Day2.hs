@@ -10,13 +10,15 @@ puzzle =
         { number = 2
         , parser = const $ (<* newline) $ ((,) <$> (decimal <* char '-') <*> decimal) `sepBy` (char ',')
         , parts =
-            [ sum
+            ( sum
                 . concatMap
                     (mapMaybe (\n -> guard (isRepetition2 n) $> n) . uncurry enumFromTo)
-            , sum
-                . concatMap
-                    (mapMaybe (\n -> guard (isRepetitionN n) $> n) . uncurry enumFromTo)
-            ]
+            )
+                /\ ( sum
+                        . concatMap
+                            (mapMaybe (\n -> guard (isRepetitionN n) $> n) . uncurry enumFromTo)
+                   )
+                /\ nil
         , extraTests = mempty
         }
 

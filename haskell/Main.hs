@@ -45,7 +45,7 @@ main =
                          in
                             withResource (parseFile $ "../inputs/" <> t <> "/" <> pt) mempty \input ->
                                 testGroup pt $
-                                    ( zip (map show [1 :: Int ..]) parts <&> \(n, pp) ->
+                                    ( flip mapWithIndexOutputParameterisedFunctionList parts \(show . succ -> n) pp ->
                                         goldenVsStringDiff n diffCommand ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
                                             TL.encodeUtf8 . (<> "\n") . TL.show . pp <$> input
                                     )
