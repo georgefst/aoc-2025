@@ -1,4 +1,3 @@
-use crate::parts;
 use crate::puzzle::Puzzle;
 use nom::{
     Parser,
@@ -9,43 +8,44 @@ use nom::{
     sequence::{separated_pair, terminated},
 };
 
-pub fn puzzle() -> Puzzle<Vec<(usize, usize)>, impl crate::puzzle::PartsList<Vec<(usize, usize)>>> {
-    Puzzle {
-        number: 2,
-        parser: |input| {
-            terminated(
-                terminated(
-                    separated_list1(
-                        char(','),
-                        separated_pair(parse_int(), char('-'), parse_int()),
-                    ),
-                    newline,
-                ),
-                eof,
-            )
-            .parse(input)
-            .unwrap()
-            .1
-        },
-        parts: parts![
-            |input: &Vec<(usize, usize)>| {
-                input
-                    .into_iter()
-                    .flat_map(|(l, u)| {
-                        (*l..(u + 1)).flat_map(|n| if is_repetition_2(n) { Some(n) } else { None })
-                    })
-                    .sum::<usize>()
-            },
-            |input: &Vec<(usize, usize)>| {
-                input
-                    .into_iter()
-                    .flat_map(|(l, u)| {
-                        (*l..(u + 1)).flat_map(|n| if is_repetition_n(n) { Some(n) } else { None })
-                    })
-                    .sum::<usize>()
-            },
-        ],
-    }
+pub const PUZZLE: Puzzle<Vec<(usize, usize)>, (fn(&Vec<(usize, usize)>) -> usize, fn(&Vec<(usize, usize)>) -> usize)> = Puzzle {
+    number: 2,
+    parser: parse,
+    parts: (part1, part2),
+};
+
+fn parse(input: &str) -> Vec<(usize, usize)> {
+    terminated(
+        terminated(
+            separated_list1(
+                char(','),
+                separated_pair(parse_int(), char('-'), parse_int()),
+            ),
+            newline,
+        ),
+        eof,
+    )
+    .parse(input)
+    .unwrap()
+    .1
+}
+
+fn part1(input: &Vec<(usize, usize)>) -> usize {
+    input
+        .into_iter()
+        .flat_map(|(l, u)| {
+            (*l..(u + 1)).flat_map(|n| if is_repetition_2(n) { Some(n) } else { None })
+        })
+        .sum()
+}
+
+fn part2(input: &Vec<(usize, usize)>) -> usize {
+    input
+        .into_iter()
+        .flat_map(|(l, u)| {
+            (*l..(u + 1)).flat_map(|n| if is_repetition_n(n) { Some(n) } else { None })
+        })
+        .sum()
 }
 
 fn is_repetition_2(n: usize) -> bool {

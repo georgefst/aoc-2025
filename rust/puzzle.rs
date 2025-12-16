@@ -1,4 +1,4 @@
-use std::{fmt::Display, marker::PhantomData};
+use std::fmt::Display;
 
 pub struct Puzzle<Input, Parts: PartsList<Input>> {
     pub number: u32,
@@ -6,64 +6,45 @@ pub struct Puzzle<Input, Parts: PartsList<Input>> {
     pub parts: Parts,
 }
 
-/// A heterogeneous list of part functions, similar to Haskell's OutputParameterisedFunctionList.
-/// Each part can have a different output type, as long as it implements Display.
+/// A trait for collections of part functions that can have heterogeneous output types.
+/// Implemented for tuples of function pointers.
 pub trait PartsList<Input> {
     fn run(&self, input: &Input) -> Vec<String>;
 }
 
-/// The empty list (nil)
-pub struct PNil;
-
-impl<Input> PartsList<Input> for PNil {
+// Implementation for empty tuple (no parts)
+impl<Input> PartsList<Input> for () {
     fn run(&self, _input: &Input) -> Vec<String> {
         vec![]
     }
 }
 
-/// A cons cell: a function followed by more parts
-pub struct PCons<Input, Output, F, Rest>
-where
-    F: Fn(&Input) -> Output,
-    Output: Display,
-    Rest: PartsList<Input>,
-{
-    pub head: F,
-    pub tail: Rest,
-    phantom: PhantomData<(Input, Output)>,
+// Implementation for 1-tuple
+impl<Input, O1: Display> PartsList<Input> for (fn(&Input) -> O1,) {
+    fn run(&self, input: &Input) -> Vec<String> {
+        vec![(self.0)(input).to_string() + "\n"]
+    }
 }
 
-impl<Input, Output, F, Rest> PartsList<Input> for PCons<Input, Output, F, Rest>
-where
-    F: Fn(&Input) -> Output,
-    Output: Display,
-    Rest: PartsList<Input>,
+// Implementation for 2-tuple (most common case for AoC)
+impl<Input, O1: Display, O2: Display> PartsList<Input> for (fn(&Input) -> O1, fn(&Input) -> O2) {
+    fn run(&self, input: &Input) -> Vec<String> {
+        vec![
+            (self.0)(input).to_string() + "\n",
+            (self.1)(input).to_string() + "\n",
+        ]
+    }
+}
+
+// Implementation for 3-tuple (in case a puzzle has extra parts)
+impl<Input, O1: Display, O2: Display, O3: Display> PartsList<Input>
+    for (fn(&Input) -> O1, fn(&Input) -> O2, fn(&Input) -> O3)
 {
     fn run(&self, input: &Input) -> Vec<String> {
-        let mut results = vec![(self.head)(input).to_string() + "\n"];
-        results.extend(self.tail.run(input));
-        results
+        vec![
+            (self.0)(input).to_string() + "\n",
+            (self.1)(input).to_string() + "\n",
+            (self.2)(input).to_string() + "\n",
+        ]
     }
-}
-
-/// Constructor for PCons - the /\ operator equivalent
-pub fn cons<Input, Output, F, Rest>(head: F, tail: Rest) -> PCons<Input, Output, F, Rest>
-where
-    F: Fn(&Input) -> Output,
-    Output: Display,
-    Rest: PartsList<Input>,
-{
-    PCons {
-        head,
-        tail,
-        phantom: PhantomData,
-    }
-}
-
-/// parts![f1, f2, f3] = cons(f1, cons(f2, cons(f3, PNil)))
-#[macro_export]
-macro_rules! parts {
-    () => { $crate::puzzle::PNil };
-    ($f:expr $(,)?) => { $crate::puzzle::cons($f, $crate::puzzle::PNil) };
-    ($f:expr, $($rest:expr),+ $(,)?) => { $crate::puzzle::cons($f, parts!($($rest),+)) };
 }
