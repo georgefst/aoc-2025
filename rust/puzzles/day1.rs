@@ -9,7 +9,7 @@ use nom::{
     sequence::{pair, terminated},
 };
 
-pub const PUZZLE: Puzzle<Vec<(Direction, i32)>, i32, 2> = Puzzle {
+pub const PUZZLE: Puzzle<Vec<(Direction, i32)>, 2> = Puzzle {
     number: 1,
     parser: |input| {
         terminated(
@@ -43,7 +43,7 @@ pub const PUZZLE: Puzzle<Vec<(Direction, i32)>, i32, 2> = Puzzle {
                 }
                 p = p1;
             }
-            r
+            r.to_string()
         },
         |instructions| {
             let mut p = 50;
@@ -65,7 +65,7 @@ pub const PUZZLE: Puzzle<Vec<(Direction, i32)>, i32, 2> = Puzzle {
                 r += c1;
                 p = p1;
             }
-            r
+            r.to_string()
         },
     ],
 };

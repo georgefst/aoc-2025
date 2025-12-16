@@ -3,7 +3,6 @@ mod puzzles;
 use crate::puzzle::Puzzle;
 use puzzles::day1;
 use puzzles::day2;
-use std::fmt::Display;
 use std::fs;
 
 const PUZZLES: [&dyn SomePuzzle; 2] = [&day1::PUZZLE, &day2::PUZZLE];
@@ -39,12 +38,12 @@ pub trait SomePuzzle {
     fn number(&self) -> u32;
     fn run(&self, input: &str) -> Vec<String>;
 }
-impl<Input, Output: Display, const N: usize> SomePuzzle for Puzzle<Input, Output, { N }> {
+impl<Input, const N: usize> SomePuzzle for Puzzle<Input, { N }> {
     fn number(&self) -> u32 {
         self.number
     }
     fn run(&self, s: &str) -> Vec<String> {
         let input = (self.parser)(s);
-        self.parts.map(|p| p(&input).to_string() + "\n").to_vec()
+        self.parts.map(|p| p(&input) + "\n").to_vec()
     }
 }

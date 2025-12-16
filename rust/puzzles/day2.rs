@@ -8,7 +8,7 @@ use nom::{
     sequence::{separated_pair, terminated},
 };
 
-pub const PUZZLE: Puzzle<Vec<(usize, usize)>, usize, 2> = Puzzle {
+pub const PUZZLE: Puzzle<Vec<(usize, usize)>, 2> = Puzzle {
     number: 2,
     parser: |input| {
         terminated(
@@ -32,7 +32,8 @@ pub const PUZZLE: Puzzle<Vec<(usize, usize)>, usize, 2> = Puzzle {
                 .flat_map(|(l, u)| {
                     (*l..(u + 1)).flat_map(|n| if is_repetition_2(n) { Some(n) } else { None })
                 })
-                .sum()
+                .sum::<usize>()
+                .to_string()
         },
         |input| {
             input
@@ -40,7 +41,8 @@ pub const PUZZLE: Puzzle<Vec<(usize, usize)>, usize, 2> = Puzzle {
                 .flat_map(|(l, u)| {
                     (*l..(u + 1)).flat_map(|n| if is_repetition_n(n) { Some(n) } else { None })
                 })
-                .sum()
+                .sum::<usize>()
+                .to_string()
         },
     ],
 };
