@@ -1,3 +1,4 @@
+use crate::parts;
 use crate::puzzle::Puzzle;
 use nom::{
     Parser,
@@ -9,66 +10,69 @@ use nom::{
     sequence::{pair, terminated},
 };
 
-pub const PUZZLE: Puzzle<Vec<(Direction, i32)>, i32, 2> = Puzzle {
-    number: 1,
-    parser: |input| {
-        terminated(
+pub fn puzzle()
+-> Puzzle<Vec<(Direction, i32)>, impl crate::puzzle::PartsList<Vec<(Direction, i32)>>> {
+    Puzzle {
+        number: 1,
+        parser: |input| {
             terminated(
-                separated_list1(
-                    newline,
-                    pair(
-                        alt((
-                            value(Direction::L, char('L')),
-                            value(Direction::R, char('R')),
-                        )),
-                        parse_int(),
+                terminated(
+                    separated_list1(
+                        newline,
+                        pair(
+                            alt((
+                                value(Direction::L, char('L')),
+                                value(Direction::R, char('R')),
+                            )),
+                            parse_int(),
+                        ),
                     ),
+                    newline,
                 ),
-                newline,
-            ),
-            eof,
-        )
-        .parse(input)
-        .unwrap()
-        .1
-    },
-    parts: [
-        |instructions| {
-            let mut p = 50;
-            let mut r = 0;
-            for (d, i) in instructions {
-                let (_, p1) = step(*i, *d, p);
-                if p1 == 0 {
-                    r += 1;
-                }
-                p = p1;
-            }
-            r
+                eof,
+            )
+            .parse(input)
+            .unwrap()
+            .1
         },
-        |instructions| {
-            let mut p = 50;
-            let mut r = 0;
-            for (d, i) in instructions {
-                let (c, p1) = step(*i, *d, p);
-                let c1 = match d {
-                    Direction::R => c.abs(),
-                    Direction::L => {
-                        if p == 0 {
-                            c.abs() - 1
-                        } else if p1 == 0 {
-                            c.abs() + 1
-                        } else {
-                            c.abs()
-                        }
+        parts: parts![
+            |instructions: &Vec<(Direction, i32)>| {
+                let mut p = 50;
+                let mut r = 0;
+                for (d, i) in instructions {
+                    let (_, p1) = step(*i, *d, p);
+                    if p1 == 0 {
+                        r += 1;
                     }
-                };
-                r += c1;
-                p = p1;
-            }
-            r
-        },
-    ],
-};
+                    p = p1;
+                }
+                r
+            },
+            |instructions: &Vec<(Direction, i32)>| {
+                let mut p = 50;
+                let mut r = 0;
+                for (d, i) in instructions {
+                    let (c, p1) = step(*i, *d, p);
+                    let c1 = match d {
+                        Direction::R => c.abs(),
+                        Direction::L => {
+                            if p == 0 {
+                                c.abs() - 1
+                            } else if p1 == 0 {
+                                c.abs() + 1
+                            } else {
+                                c.abs()
+                            }
+                        }
+                    };
+                    r += c1;
+                    p = p1;
+                }
+                r
+            },
+        ],
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {

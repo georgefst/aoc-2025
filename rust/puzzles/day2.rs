@@ -1,3 +1,4 @@
+use crate::parts;
 use crate::puzzle::Puzzle;
 use nom::{
     Parser,
@@ -8,49 +9,55 @@ use nom::{
     sequence::{separated_pair, terminated},
 };
 
-pub const PUZZLE: Puzzle<Vec<(usize, usize)>, usize, 2> = Puzzle {
-    number: 2,
-    parser: |input| {
-        terminated(
+pub fn puzzle() -> Puzzle<Vec<(usize, usize)>, impl crate::puzzle::PartsList<Vec<(usize, usize)>>> {
+    Puzzle {
+        number: 2,
+        parser: |input| {
             terminated(
-                separated_list1(
-                    char(','),
-                    separated_pair(parse_int(), char('-'), parse_int()),
+                terminated(
+                    separated_list1(
+                        char(','),
+                        separated_pair(parse_int(), char('-'), parse_int()),
+                    ),
+                    newline,
                 ),
-                newline,
-            ),
-            eof,
-        )
-        .parse(input)
-        .unwrap()
-        .1
-    },
-    parts: [
-        |input| {
-            input
-                .into_iter()
-                .flat_map(|(l, u)| {
-                    (*l..(u + 1)).flat_map(|n| if is_repetition_2(n) { Some(n) } else { None })
-                })
-                .sum()
+                eof,
+            )
+            .parse(input)
+            .unwrap()
+            .1
         },
-        |input| {
-            input
-                .into_iter()
-                .flat_map(|(l, u)| {
-                    (*l..(u + 1)).flat_map(|n| if is_repetition_n(n) { Some(n) } else { None })
-                })
-                .sum()
-        },
-    ],
-};
+        parts: parts![
+            |input: &Vec<(usize, usize)>| {
+                input
+                    .into_iter()
+                    .flat_map(|(l, u)| {
+                        (*l..(u + 1)).flat_map(|n| if is_repetition_2(n) { Some(n) } else { None })
+                    })
+                    .sum::<usize>()
+            },
+            |input: &Vec<(usize, usize)>| {
+                input
+                    .into_iter()
+                    .flat_map(|(l, u)| {
+                        (*l..(u + 1)).flat_map(|n| if is_repetition_n(n) { Some(n) } else { None })
+                    })
+                    .sum::<usize>()
+            },
+        ],
+    }
+}
 
 fn is_repetition_2(n: usize) -> bool {
     let n = n.to_string();
     let l = n.len();
     let d = l / 2;
     let r = l % 2;
-    if r == 0 { equal_chunks(&n, d) } else { false }
+    if r == 0 {
+        equal_chunks(&n, d)
+    } else {
+        false
+    }
 }
 
 fn is_repetition_n(n: usize) -> bool {

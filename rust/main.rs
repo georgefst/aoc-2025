@@ -1,18 +1,20 @@
 mod puzzle;
 mod puzzles;
-use crate::puzzle::Puzzle;
+use crate::puzzle::PartsList;
 use puzzles::day1;
 use puzzles::day2;
-use std::fmt::Display;
 use std::fs;
 
-const PUZZLES: [&dyn SomePuzzle; 2] = [&day1::PUZZLE, &day2::PUZZLE];
-
 fn main() {
+    let puzzles: Vec<Box<dyn SomePuzzle>> = vec![
+        Box::new(day1::puzzle()),
+        Box::new(day2::puzzle()),
+    ];
+
     [false, true].iter().for_each(|is_real_data| {
         let t = if *is_real_data { "real" } else { "examples" };
         println!("{}", t);
-        PUZZLES.into_iter().for_each(|puzzle| {
+        puzzles.iter().for_each(|puzzle| {
             println!("  {}", puzzle.number());
             let input = fs::read_to_string(format!("../inputs/{}/{}", t, puzzle.number()))
                 .expect("no input file");
@@ -39,12 +41,12 @@ pub trait SomePuzzle {
     fn number(&self) -> u32;
     fn run(&self, input: &str) -> Vec<String>;
 }
-impl<Input, Output: Display, const N: usize> SomePuzzle for Puzzle<Input, Output, { N }> {
+impl<Input, Parts: PartsList<Input>> SomePuzzle for puzzle::Puzzle<Input, Parts> {
     fn number(&self) -> u32 {
         self.number
     }
     fn run(&self, s: &str) -> Vec<String> {
         let input = (self.parser)(s);
-        self.parts.map(|p| p(&input).to_string() + "\n").to_vec()
+        self.parts.run(&input)
     }
 }
