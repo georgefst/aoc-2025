@@ -64,7 +64,7 @@ fn is_repetition_n(n: usize) -> bool {
 
 fn equal_chunks(n: &String, i: usize) -> bool {
     let chars = n.chars().collect::<Vec<char>>();
-    let mut chunks = (chars[..]).chunks(i);
+    let mut chunks = chars.chunks(i);
     match chunks.next() {
         None => true,
         Some(x) => chunks.all(|y| y == x),
