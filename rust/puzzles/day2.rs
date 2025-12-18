@@ -57,9 +57,7 @@ fn is_repetition_2(n: usize) -> bool {
 
 fn is_repetition_n(n: usize) -> bool {
     let n = n.to_string();
-    let l = n.len();
-    let d = l / 2;
-    (1..(d + 1)).any(|i| equal_chunks(&n, i))
+    (1..(n.len() / 2 + 1)).any(|i| equal_chunks(&n, i))
 }
 
 fn equal_chunks(n: &String, i: usize) -> bool {
