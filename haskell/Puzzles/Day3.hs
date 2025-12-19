@@ -37,4 +37,4 @@ maxBatteries n0 (Bank bs0) = flip unfoldrM (n0, toList bs0) \case
 
 -- returns the leftmost element in case of a tie
 findMax :: (Ord a) => NonEmpty a -> (Int, a)
-findMax = foldl1' (\m x -> if snd x > snd m then x else m) . NE.zip (0 :| [1 ..])
+findMax = maximumBy (comparing snd) . NE.reverse . NE.zip (0 :| [1 ..])
