@@ -32,9 +32,9 @@ maxBatteries :: Int -> Bank -> Maybe [Battery]
 maxBatteries n0 (Bank bs0) = flip unfoldrM (n0, toList bs0) \case
     (0, _) -> pure Nothing
     (n, bs) -> do
-        (b, i) <- findMax <$> nonEmpty (dropEnd (n - 1) bs)
+        (i, b) <- findMax <$> nonEmpty (dropEnd (n - 1) bs)
         pure $ Just (b, (n - 1, drop (i + 1) bs))
 
 -- returns the leftmost element in case of a tie
-findMax :: (Ord a) => NonEmpty a -> (a, Int)
-findMax = foldl1' (\m x -> if fst x > fst m then x else m) . flip NE.zip (0 :| [1 ..])
+findMax :: (Ord a) => NonEmpty a -> (Int, a)
+findMax = foldl1' (\m x -> if snd x > snd m then x else m) . NE.zip (0 :| [1 ..])

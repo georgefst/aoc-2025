@@ -53,7 +53,7 @@ fn max_batteries(n: usize, v: &[u8]) -> Option<Vec<u8>> {
     let mut slice = v;
     while remaining > 0 {
         match find_max(&slice[..slice.len() - remaining + 1]) {
-            Some((b, i)) => {
+            Some((i, b)) => {
                 result.push(*b);
                 remaining -= 1;
                 slice = &slice[i + 1..];
@@ -64,12 +64,8 @@ fn max_batteries(n: usize, v: &[u8]) -> Option<Vec<u8>> {
     Some(result)
 }
 
-fn find_max<A: Ord + Copy>(v: &[A]) -> Option<(&A, usize)> {
-    v.iter()
-        .enumerate()
-        .rev()
-        .max_by_key(|x| x.1)
-        .map(|(n, x)| (x, n))
+fn find_max<A: Ord + Copy>(v: &[A]) -> Option<(usize, &A)> {
+    v.iter().enumerate().rev().max_by_key(|x| x.1)
 }
 
 fn digits_to_int(digits: &[u8]) -> usize {
