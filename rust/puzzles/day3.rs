@@ -52,6 +52,9 @@ fn max_batteries(n: usize, v: &[u8]) -> Option<Vec<u8>> {
     let mut remaining = n;
     let mut slice = v;
     while remaining > 0 {
+        if slice.len() - remaining + 1 == 0 {
+            return None;
+        }
         let (b, i) = find_max(&slice[..slice.len() - remaining + 1]);
         result.push(b);
         remaining -= 1;
