@@ -4,9 +4,10 @@ use crate::puzzle::Puzzle;
 use puzzles::day1;
 use puzzles::day2;
 use puzzles::day3;
+use puzzles::day4;
 use std::fs;
 
-const PUZZLES: [&dyn SomePuzzle; 3] = [&day1::PUZZLE, &day2::PUZZLE, &day3::PUZZLE];
+const PUZZLES: [&dyn SomePuzzle; 4] = [&day1::PUZZLE, &day2::PUZZLE, &day3::PUZZLE, &day4::PUZZLE];
 
 fn main() {
     [false, true].iter().for_each(|is_real_data| {
