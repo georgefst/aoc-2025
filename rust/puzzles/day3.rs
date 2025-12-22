@@ -64,7 +64,7 @@ fn max_batteries(n: usize, v: &[u8]) -> Option<Vec<u8>> {
     Some(result)
 }
 
-fn find_max<A: Ord + Copy>(v: &[A]) -> Option<(usize, &A)> {
+fn find_max<A: Ord>(v: &[A]) -> Option<(usize, &A)> {
     v.iter().enumerate().rev().max_by_key(|x| x.1)
 }
 
