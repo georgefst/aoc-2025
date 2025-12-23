@@ -30,12 +30,12 @@ fn main() {
                     "    {}: {}",
                     n,
                     if expected == output {
-                        let duration = if elapsed > Duration::from_millis(10) {
-                            format!(" ({:?})", elapsed)
-                        } else {
-                            "".to_owned()
+                        let mut s = String::from("OK");
+                        if elapsed > Duration::from_millis(10) {
+                            let d = format!(" ({:?})", elapsed);
+                            s = s + &d;
                         };
-                        "OK".to_owned() + &duration
+                        s
                     } else {
                         format!("expected {}, got {}", expected, output)
                     }
