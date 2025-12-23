@@ -19,9 +19,9 @@ fn main() {
             let input = fs::read_to_string(format!("../inputs/{}/{}", t, puzzle.number()))
                 .expect("no input file");
             puzzle.with_parts(&input, &|n, run| {
-                let expected =
-                    fs::read_to_string(format!("../outputs/{}/{}/{}", t, puzzle.number(), n))
+                let expected = fs::read_to_string(format!("../outputs/{}/{}/{}", t, puzzle.number(), n))
                         .expect("no golden file");
+                let expected = expected.trim_end();
                 print!("    {}: ", n);
                 let start = Instant::now();
                 let output = run();
@@ -35,8 +35,8 @@ fn main() {
                 } else {
                     println!(
                         "expected {}, got {}",
-                        expected.trim_end(),
-                        output.trim_end()
+                        expected,
+                        output
                     );
                 };
             });
@@ -55,7 +55,7 @@ impl<Input, const N: usize> SomePuzzle for Puzzle<Input, { N }> {
     fn with_parts(&self, s: &str, f: &dyn Fn(usize, &dyn Fn() -> String)) {
         let input = (self.parser)(s);
         for (i, p) in self.parts.iter().enumerate() {
-            f(i + 1, &|| p(&input) + "\n");
+            f(i + 1, &|| p(&input));
         }
     }
 }
