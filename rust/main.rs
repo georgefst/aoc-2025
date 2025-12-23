@@ -6,6 +6,7 @@ use puzzles::day2;
 use puzzles::day3;
 use puzzles::day4;
 use std::fs;
+use std::time::{Duration, Instant};
 
 const PUZZLES: [&dyn SomePuzzle; 4] = [&day1::PUZZLE, &day2::PUZZLE, &day3::PUZZLE, &day4::PUZZLE];
 
@@ -22,9 +23,15 @@ fn main() {
                     fs::read_to_string(format!("../outputs/{}/{}/{}", t, puzzle.number(), n))
                         .expect("no golden file");
                 print!("    {}: ", n);
+                let start = Instant::now();
                 let output = run();
+                let elapsed = start.elapsed();
                 if expected == output {
-                    println!("OK");
+                    print!("OK");
+                    if elapsed > Duration::from_millis(10) {
+                        print!(" ({:?}) ", elapsed);
+                    }
+                    print!("\n");
                 } else {
                     println!(
                         "expected {}, got {}",
