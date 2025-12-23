@@ -32,9 +32,8 @@ fn main() {
                     if expected == output {
                         let mut s = String::from("OK");
                         if elapsed > Duration::from_millis(10) {
-                            let d = format!(" ({:?})", elapsed);
-                            s = s + &d;
-                        };
+                            s.push_str(&format!(" ({:?})", elapsed));
+                        }
                         s
                     } else {
                         format!("expected {}, got {}", expected, output)
