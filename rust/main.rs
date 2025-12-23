@@ -17,12 +17,13 @@ fn main() {
             println!("  {}", puzzle.number());
             let input = fs::read_to_string(format!("../inputs/{}/{}", t, puzzle.number()))
                 .expect("no input file");
-            puzzle.run(&input).iter().zip(1..).for_each(|(output, n)| {
+            puzzle.with_parts(&input, &|n, run| {
                 let expected =
                     fs::read_to_string(format!("../outputs/{}/{}/{}", t, puzzle.number(), n))
                         .expect("no golden file");
                 print!("    {}: ", n);
-                if expected == *output {
+                let output = run();
+                if expected == output {
                     println!("OK");
                 } else {
                     println!(
@@ -38,14 +39,16 @@ fn main() {
 
 pub trait SomePuzzle {
     fn number(&self) -> u32;
-    fn run(&self, input: &str) -> Vec<String>;
+    fn with_parts(&self, input: &str, f: &dyn Fn(usize, &dyn Fn() -> String));
 }
 impl<Input, const N: usize> SomePuzzle for Puzzle<Input, { N }> {
     fn number(&self) -> u32 {
         self.number
     }
-    fn run(&self, s: &str) -> Vec<String> {
+    fn with_parts(&self, s: &str, f: &dyn Fn(usize, &dyn Fn() -> String)) {
         let input = (self.parser)(s);
-        self.parts.map(|p| p(&input) + "\n").to_vec()
+        for (i, p) in self.parts.iter().enumerate() {
+            f(i + 1, &|| p(&input) + "\n");
+        }
     }
 }
