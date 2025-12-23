@@ -23,19 +23,23 @@ fn main() {
                     fs::read_to_string(format!("../outputs/{}/{}/{}", t, puzzle.number(), n))
                         .expect("no golden file");
                 let expected = expected.trim_end();
-                print!("    {}: ", n);
                 let start = Instant::now();
                 let output = run();
                 let elapsed = start.elapsed();
-                if expected == output {
-                    print!("OK");
-                    if elapsed > Duration::from_millis(10) {
-                        print!(" ({:?})", elapsed);
+                println!(
+                    "    {}: {}",
+                    n,
+                    if expected == output {
+                        let duration = if elapsed > Duration::from_millis(10) {
+                            format!(" ({:?})", elapsed)
+                        } else {
+                            "".to_owned()
+                        };
+                        "OK".to_owned() + &duration
+                    } else {
+                        format!("expected {}, got {}", expected, output)
                     }
-                    print!("\n");
-                } else {
-                    println!("expected {}, got {}", expected, output);
-                };
+                );
             });
         });
     })
