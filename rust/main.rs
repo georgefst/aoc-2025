@@ -19,7 +19,8 @@ fn main() {
             let input = fs::read_to_string(format!("../inputs/{}/{}", t, puzzle.number()))
                 .expect("no input file");
             puzzle.with_parts(&input, &|n, run| {
-                let expected = fs::read_to_string(format!("../outputs/{}/{}/{}", t, puzzle.number(), n))
+                let expected =
+                    fs::read_to_string(format!("../outputs/{}/{}/{}", t, puzzle.number(), n))
                         .expect("no golden file");
                 let expected = expected.trim_end();
                 print!("    {}: ", n);
@@ -33,11 +34,7 @@ fn main() {
                     }
                     print!("\n");
                 } else {
-                    println!(
-                        "expected {}, got {}",
-                        expected,
-                        output
-                    );
+                    println!("expected {}, got {}", expected, output);
                 };
             });
         });
