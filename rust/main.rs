@@ -30,7 +30,7 @@ fn main() {
                 if expected == output {
                     print!("OK");
                     if elapsed > Duration::from_millis(10) {
-                        print!(" ({:?}) ", elapsed);
+                        print!(" ({:?})", elapsed);
                     }
                     print!("\n");
                 } else {
