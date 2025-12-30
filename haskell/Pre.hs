@@ -1,4 +1,5 @@
 {-# LANGUAGE PackageImports #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Pre (
     module BasePrelude,
@@ -28,9 +29,7 @@ module Pre (
     module Data.Word,
     module Linear,
     module Safe,
-    module Test.Tasty,
-    module Test.Tasty.Golden,
-    module Test.Tasty.HUnit,
+    module Test.Syd,
     module Text.Megaparsec,
     module Text.Megaparsec.Char,
     module Text.Megaparsec.Char.Lexer,
@@ -41,7 +40,6 @@ module Pre (
     allUnorderedPairs,
     adjacentPairs,
     sortPair,
-    diffCommand,
     OutputParameterisedFunctionList,
     mapOutputParameterisedFunctionList,
     mapWithIndexOutputParameterisedFunctionList,
@@ -90,9 +88,7 @@ import Data.Void
 import Data.Word
 import Linear (V2 (..))
 import Safe
-import Test.Tasty
-import Test.Tasty.Golden hiding (Always)
-import Test.Tasty.HUnit
+import Test.Syd
 import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
@@ -101,7 +97,7 @@ data Puzzle = forall input outputs. Puzzle
     { number :: Word
     , parser :: Bool -> Parsec Void Text input
     , parts :: OutputParameterisedFunctionList Show input outputs
-    , extraTests :: Bool -> FilePath -> IO input -> [TestTree]
+    , extraTests :: Bool -> FilePath -> input -> Spec
     }
 
 digit :: (Token s ~ Char, Num b, MonadParsec e s f) => f b
@@ -128,9 +124,6 @@ adjacentPairs = \case
 
 sortPair :: (Ord a) => (a, a) -> (a, a)
 sortPair (a, b) = if a <= b then (a, b) else (b, a)
-
-diffCommand :: FilePath -> FilePath -> [String]
-diffCommand a b = ["diff", "--color=always", a, b]
 
 infixr 9 /\
 (/\) :: (c output) => (input -> output) -> OutputParameterisedFunctionList c input outputs -> OutputParameterisedFunctionList c input (output : outputs)
@@ -163,3 +156,8 @@ mapWithIndexOutputParameterisedFunctionList f = go 0
     go i = \case
         OutputParameterisedFunctionListNil -> []
         OutputParameterisedFunctionListCons x xs -> f i x : go (i + 1) xs
+
+instance Semigroup (TestDefM '[] () ()) where
+    (<>) = (>>)
+instance Monoid (TestDefM '[] () ()) where
+    mempty = pure ()

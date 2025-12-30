@@ -4,9 +4,8 @@ import Pre
 
 import Data.Sequence qualified as Seq
 import Data.Stream.Infinite qualified as S
-import Data.Text.Lazy qualified as TL
-import Data.Text.Lazy.Encoding qualified as TL
-import Data.Text.Lazy.IO qualified as TL
+import Data.Text qualified as T
+import Data.Text.IO qualified as T
 
 puzzle :: Puzzle
 puzzle =
@@ -21,31 +20,23 @@ puzzle =
                         . mkGrid
                    )
                 /\ nil
-        , extraTests = \isRealData path input ->
-            [ testCase "round trip" do
-                t <- TL.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"
-                input' <- input
-                t @=? drawGrid (mkGrid input' <&> \case InEmpty -> OutEmpty; InRoll -> OutRoll)
-            , withResource
-                (Seq.fromList . takeUntil noneAccessible . fmap snd . generateFrames . mkGrid <$> input)
-                mempty
-                \frames ->
-                    testGroup
-                        "frames"
-                        let nFrames = if isRealData then 58 else 9
-                         in ( [0 .. nFrames] <&> \n ->
-                                goldenVsStringDiff (show n) diffCommand (path <> "frames/" <> show n) $
-                                    TL.encodeUtf8 . maybe "frame list too short!" drawGrid . Seq.lookup n <$> frames
-                            )
-                                <> [ testCase "end" do
-                                        Just g <- Seq.lookup nFrames <$> frames
-                                        assertBool "accessible tile found" $ noneAccessible g
-                                   ]
-            ]
+        , extraTests = \isRealData path input -> do
+            it "round trip" do
+                t <- T.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"
+                drawGrid (mkGrid input <&> \case InEmpty -> OutEmpty; InRoll -> OutRoll) `shouldBe` t
+            describe "frames" do
+                let frames = Seq.fromList . takeUntil noneAccessible . fmap snd . generateFrames $ mkGrid input
+                let nFrames = Seq.length frames - 1
+                for_ [0 .. nFrames] \n ->
+                    it (show n) . pureGoldenTextFile (path <> "frames/" <> show n) $
+                        maybe "frame list too short!" drawGrid (Seq.lookup n frames)
+                it "end" do
+                    Just g <- pure $ Seq.lookup nFrames frames
+                    (g `shouldSatisfyNamed` "accessible tile found") noneAccessible
         }
 
 newtype Grid a = Grid (Seq (Seq (V2 Int, a)))
-    deriving (Functor)
+    deriving (Functor, Show)
 
 data InTile
     = InEmpty
@@ -67,8 +58,8 @@ outToChar = \case
     OutRoll -> inToChar InRoll
     OutAccessible -> 'x'
 
-drawGrid :: Grid OutTile -> TL.Text
-drawGrid (Grid g) = TL.unlines . toList . fmap (TL.pack . toList . fmap outToChar) $ snd <<$>> g
+drawGrid :: Grid OutTile -> T.Text
+drawGrid (Grid g) = T.unlines . toList . fmap (T.pack . toList . fmap outToChar) $ snd <<$>> g
 
 mkGrid :: [[a]] -> Grid a
 mkGrid = Grid . Seq.fromList . map Seq.fromList . zipWith (map . first . V2) [0 ..] . map (zip [0 ..])

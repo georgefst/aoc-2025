@@ -39,6 +39,9 @@ executable aoc
     ghc-options:
         -Wall
         -fdefer-type-errors
+        -threaded
+        -rtsopts
+        -with-rtsopts=-N
     build-depends:
         base >= 4.14,
         async,
@@ -60,11 +63,9 @@ executable aoc
         mtl,
         pretty-simple,
         safe,
+        sydtest,
         stm,
         streams,
-        tasty-golden,
-        tasty-hunit,
-        tasty,
         text,
         time,
         transformers,
