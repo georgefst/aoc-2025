@@ -1,4 +1,5 @@
 {-# LANGUAGE PackageImports #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module Pre (
@@ -40,10 +41,10 @@ module Pre (
     allUnorderedPairs,
     adjacentPairs,
     sortPair,
-    OutputParameterisedFunctionList,
-    mapOutputParameterisedFunctionList,
-    mapWithIndexOutputParameterisedFunctionList,
+    PuzzleParts,
+    applyPuzzleParts,
     (/\),
+    (/\\),
     nil,
 )
 where
@@ -72,7 +73,7 @@ import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimu
 import Data.Foldable1
 import Data.Function
 import Data.Functor
-import Data.Kind (Constraint, Type)
+import Data.Kind (Type)
 import Data.List (List, sortOn, transpose)
 import Data.List.Extra (dropEnd, enumerate, firstJust, notNull, splitOn)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1, tail, tails)
@@ -81,6 +82,7 @@ import Data.Ord
 import Data.Sequence (Seq)
 import Data.Stream.Infinite (Stream ((:>)))
 import Data.Text (Text)
+import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Traversable
 import Data.Tuple.Extra ((&&&))
@@ -96,8 +98,8 @@ import Text.Megaparsec.Char.Lexer (decimal)
 data Puzzle = forall input outputs. Puzzle
     { number :: Word
     , parser :: Bool -> Parsec Void Text input
-    , parts :: OutputParameterisedFunctionList Show input outputs
-    , extraTests :: Bool -> FilePath -> input -> Spec
+    , parts :: PuzzleParts input outputs
+    , extraTests :: Bool -> FilePath -> input -> HList outputs -> Spec
     }
 
 digit :: (Token s ~ Char, Num b, MonadParsec e s f) => f b
@@ -125,37 +127,30 @@ adjacentPairs = \case
 sortPair :: (Ord a) => (a, a) -> (a, a)
 sortPair (a, b) = if a <= b then (a, b) else (b, a)
 
+infixr 9 /\\
+(/\\) :: (input -> output, output -> Text) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
+(/\\) = uncurry PuzzlePartsCons
 infixr 9 /\
-(/\) :: (c output) => (input -> output) -> OutputParameterisedFunctionList c input outputs -> OutputParameterisedFunctionList c input (output : outputs)
-(/\) = OutputParameterisedFunctionListCons
-nil :: OutputParameterisedFunctionList c input '[]
-nil = OutputParameterisedFunctionListNil
+(/\) :: (Show output) => (input -> output) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
+(/\) = flip PuzzlePartsCons T.show
+nil :: PuzzleParts input '[]
+nil = PuzzlePartsNil
 
-data OutputParameterisedFunctionList (c :: Type -> Constraint) (input :: Type) (outputs :: List Type) :: Type where
-    OutputParameterisedFunctionListNil :: OutputParameterisedFunctionList c input '[]
-    OutputParameterisedFunctionListCons ::
-        (c output) =>
+data PuzzleParts (input :: Type) (outputs :: List Type) :: Type where
+    PuzzlePartsNil :: PuzzleParts input '[]
+    PuzzlePartsCons ::
         (input -> output) ->
-        OutputParameterisedFunctionList c input outputs ->
-        OutputParameterisedFunctionList c input (output ': outputs)
-mapOutputParameterisedFunctionList ::
-    (forall output. (c output) => (input -> output) -> a) ->
-    OutputParameterisedFunctionList c input outputs ->
-    [a]
-mapOutputParameterisedFunctionList f = \case
-    OutputParameterisedFunctionListNil -> []
-    OutputParameterisedFunctionListCons x xs -> f x : mapOutputParameterisedFunctionList f xs
-mapWithIndexOutputParameterisedFunctionList ::
-    forall c input outputs a.
-    (forall output. (c output) => Int -> (input -> output) -> a) ->
-    OutputParameterisedFunctionList c input outputs ->
-    [a]
-mapWithIndexOutputParameterisedFunctionList f = go 0
-  where
-    go :: Int -> OutputParameterisedFunctionList c input outputs' -> [a]
-    go i = \case
-        OutputParameterisedFunctionListNil -> []
-        OutputParameterisedFunctionListCons x xs -> f i x : go (i + 1) xs
+        (output -> Text) ->
+        PuzzleParts input outputs ->
+        PuzzleParts input (output ': outputs)
+applyPuzzleParts ::
+    forall input outputs.
+    input ->
+    PuzzleParts input outputs ->
+    (HList outputs, [Text])
+applyPuzzleParts e = \case
+    PuzzlePartsNil -> (HNil, [])
+    PuzzlePartsCons f o ps -> let r = f e in bimap (HCons r) (o r :) $ applyPuzzleParts e ps
 
 instance Semigroup (TestDefM '[] () ()) where
     (<>) = (>>)

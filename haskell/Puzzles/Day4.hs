@@ -16,17 +16,20 @@ puzzle =
             ( (\g -> countRolls g - countRolls (removeAccessibleRolls $ findAccessible g))
                 . mkGrid
             )
-                /\ ( (\g -> countRolls g - countRolls (fst $ S.head $ S.filter (noneAccessible . snd) $ generateFrames g))
-                        . mkGrid
+                /\ ( (id &&& generateFrames) . mkGrid
+                   , \(g, fs) ->
+                        T.show $ countRolls g - countRolls (fst $ S.head $ S.filter (noneAccessible . snd) fs)
                    )
-                /\ nil
-        , extraTests = \isRealData path input -> do
+                /\\ nil
+        , extraTests = \isRealData path input (HCons _ (HCons (_, fmap snd -> frameStream) HNil)) -> do
             it "round trip" do
                 t <- T.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"
                 drawGrid (mkGrid input <&> \case InEmpty -> OutEmpty; InRoll -> OutRoll) `shouldBe` t
             describe "frames" do
-                let frames = Seq.fromList . takeUntil noneAccessible . fmap snd . generateFrames $ mkGrid input
-                let nFrames = Seq.length frames - 1
+                let frames = Seq.fromList $ takeUntil noneAccessible frameStream
+                -- note that `nFrames = Seq.length frames - 1`, but we don't define it as such
+                -- since that would force the expensive evaluation during test tree construction, messing up reporting
+                let nFrames = if isRealData then 58 else 9
                 for_ [0 .. nFrames] \n ->
                     it (show n) . pureGoldenTextFile (path <> "frames/" <> show n) $
                         maybe "frame list too short!" drawGrid (Seq.lookup n frames)

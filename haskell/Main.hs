@@ -2,7 +2,6 @@ module Main (main) where
 
 import Pre
 
-import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day10 qualified as Day10
@@ -40,7 +39,7 @@ main =
                  in
                     describe pt do
                         input <- liftIO $ parseFile $ "../inputs/" <> t <> "/" <> pt
-                        sequence_ $ flip mapWithIndexOutputParameterisedFunctionList parts \(show . succ -> n) pp ->
-                            it n . pureGoldenTextFile ("../outputs/" <> t <> "/" <> pt <> "/" <> n) $
-                                T.show (pp input) <> "\n"
-                        describe "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input
+                        let (os, rs) = applyPuzzleParts input parts
+                        for_ (zip [1 :: Int ..] rs) $ uncurry $ \(show -> n) ->
+                            it n . pureGoldenTextFile ("../outputs/" <> t <> "/" <> pt <> "/" <> n) . (<> "\n")
+                        describe "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input os
