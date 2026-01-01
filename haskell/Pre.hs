@@ -152,7 +152,7 @@ applyPuzzleParts e = \case
     PuzzlePartsNil -> (HNil, [])
     PuzzlePartsCons f o ps -> let r = f e in bimap (HCons r) (o r :) $ applyPuzzleParts e ps
 
-instance Semigroup (TestDefM '[] () ()) where
+instance Semigroup (TestDefM a b ()) where
     (<>) = (>>)
-instance Monoid (TestDefM '[] () ()) where
+instance Monoid (TestDefM a b ()) where
     mempty = pure ()
