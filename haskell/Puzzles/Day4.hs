@@ -34,6 +34,7 @@ puzzle =
                     it (show n) . pureGoldenTextFile (path <> "frames/" <> show n) $
                         maybe "frame list too short!" drawGrid (Seq.lookup n frames)
                 it "end" do
+                    Seq.length frames `shouldBe` (nFrames + 1)
                     Just g <- pure $ Seq.lookup nFrames frames
                     (g `shouldSatisfyNamed` "accessible tile found") noneAccessible
         }
