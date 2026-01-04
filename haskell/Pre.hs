@@ -146,12 +146,10 @@ data HListF (f :: Type -> Type) (as :: List Type) :: Type where
         f a ->
         HListF f as ->
         HListF f (a ': as)
-
 foldHListF :: (forall x xs. f x -> r xs -> r (x ': xs)) -> r '[] -> HListF f as -> r as
 foldHListF f e = \case
     HNilF -> e
     HConsF x xs -> f x $ foldHListF f e xs
-
 mapHListF :: (forall a. f a -> g a) -> HListF f as -> HListF g as
 mapHListF t = foldHListF (\x r -> HConsF (t x) $ r) HNilF
 
