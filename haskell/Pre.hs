@@ -41,11 +41,14 @@ module Pre (
     allUnorderedPairs,
     adjacentPairs,
     sortPair,
-    PuzzleParts,
-    applyPuzzleParts,
+    HListF (..),
+    mapHListF,
+    fromHListF,
+    unHListF,
     (/\),
     (/\\),
     nil,
+    Fanout (..),
 )
 where
 
@@ -73,6 +76,8 @@ import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimu
 import Data.Foldable1
 import Data.Function
 import Data.Functor
+import Data.Functor.Contravariant
+import Data.Functor.Identity
 import Data.Kind (Type)
 import Data.List (List, sortOn, transpose)
 import Data.List.Extra (dropEnd, enumerate, firstJust, notNull, splitOn)
@@ -127,32 +132,41 @@ adjacentPairs = \case
 sortPair :: (Ord a) => (a, a) -> (a, a)
 sortPair (a, b) = if a <= b then (a, b) else (b, a)
 
+type PuzzleParts input = HListF (Fanout ((->) input) (Op Text))
 infixr 9 /\\
 (/\\) :: (input -> output, output -> Text) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\\) = uncurry PuzzlePartsCons
+(/\\) (f, o) = HConsF $ Fanout (f, Op o)
 infixr 9 /\
 (/\) :: (Show output) => (input -> output) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\) = flip PuzzlePartsCons T.show
+(/\) f = HConsF $ Fanout (f, Op T.show)
 nil :: PuzzleParts input '[]
-nil = PuzzlePartsNil
+nil = HNilF
 
-data PuzzleParts (input :: Type) (outputs :: List Type) :: Type where
-    PuzzlePartsNil :: PuzzleParts input '[]
-    PuzzlePartsCons ::
-        (input -> output) ->
-        (output -> Text) ->
-        PuzzleParts input outputs ->
-        PuzzleParts input (output ': outputs)
-applyPuzzleParts ::
-    forall input outputs.
-    input ->
-    PuzzleParts input outputs ->
-    (HList outputs, [Text])
-applyPuzzleParts e = \case
-    PuzzlePartsNil -> (HNil, [])
-    PuzzlePartsCons f o ps -> let r = f e in bimap (HCons r) (o r :) $ applyPuzzleParts e ps
+data HListF (f :: Type -> Type) (as :: List Type) :: Type where
+    HNilF :: HListF f '[]
+    HConsF ::
+        f a ->
+        HListF f as ->
+        HListF f (a ': as)
+
+mapHListF :: (forall a. f a -> g a) -> HListF f as -> HListF g as
+mapHListF t = \case
+    HNilF -> HNilF
+    HConsF x xs -> HConsF (t x) $ mapHListF t xs
+
+fromHListF :: HListF Identity as -> HList as
+fromHListF = \case
+    HNilF -> HNil
+    HConsF (Identity x) xs -> HCons x $ fromHListF xs
+
+unHListF :: HListF (Const b) as -> List b
+unHListF = \case
+    HNilF -> []
+    HConsF (Const x) xs -> x : unHListF xs
 
 instance Semigroup (TestDefM a b ()) where
     (<>) = (>>)
 instance Monoid (TestDefM a b ()) where
     mempty = pure ()
+
+newtype Fanout f g a = Fanout (f a, g a)
