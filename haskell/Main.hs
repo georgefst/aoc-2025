@@ -3,7 +3,6 @@ module Main (main) where
 import Pre
 
 import Data.Functor.Contravariant
-import Data.Functor.Identity
 import Data.Text.IO qualified as T
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day10 qualified as Day10
@@ -42,7 +41,7 @@ main =
                     describe pt do
                         input <- liftIO $ parseFile $ "../inputs/" <> t <> "/" <> pt
                         let (rs, os) =
-                                ((unHListF . mapHListF (Const . fst)) &&& (fromHListF . mapHListF (Identity . snd))) $
+                                ((getConst . foldHListF (\x r -> Const $ fst x : getConst r) (Const [])) &&& foldHListF (HCons . snd) HNil) $
                                     mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
                         for_ (zip [1 :: Int ..] rs) $ uncurry $ \(show -> n) ->
                             it n . pureGoldenTextFile ("../outputs/" <> t <> "/" <> pt <> "/" <> n) . (<> "\n")

@@ -44,8 +44,6 @@ module Pre (
     HListF (..),
     foldHListF,
     mapHListF,
-    fromHListF,
-    unHListF,
     (/\),
     (/\\),
     nil,
@@ -78,7 +76,6 @@ import Data.Foldable1
 import Data.Function
 import Data.Functor
 import Data.Functor.Contravariant
-import Data.Functor.Identity
 import Data.Kind (Type)
 import Data.List (List, sortOn, transpose)
 import Data.List.Extra (dropEnd, enumerate, firstJust, notNull, splitOn)
@@ -157,12 +154,6 @@ foldHListF f e = \case
 
 mapHListF :: (forall a. f a -> g a) -> HListF f as -> HListF g as
 mapHListF t = foldHListF (\x r -> HConsF (t x) $ r) HNilF
-
-fromHListF :: HListF Identity as -> HList as
-fromHListF = foldHListF (\(Identity x) r -> HCons x r) HNil
-
-unHListF :: HListF (Const b) as -> List b
-unHListF = getConst . foldHListF (\(Const x) (Const r) -> Const $ x : r) (Const [])
 
 instance Semigroup (TestDefM a b ()) where
     (<>) = (>>)
