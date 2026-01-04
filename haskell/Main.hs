@@ -41,7 +41,7 @@ main =
                     describe pt do
                         input <- liftIO $ parseFile $ "../inputs/" <> t <> "/" <> pt
                         let (rs, os) =
-                                ((getConst . foldHListF (\x r -> Const $ fst x : getConst r) (Const [])) &&& foldHListF (HCons . snd) HNil) $
+                                (foldHListF0 ((:) . fst) [] &&& foldHListF (HCons . snd) HNil) $
                                     mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
                         for_ (zip [1 :: Int ..] rs) $ uncurry $ \(show -> n) ->
                             it n . pureGoldenTextFile ("../outputs/" <> t <> "/" <> pt <> "/" <> n) . (<> "\n")

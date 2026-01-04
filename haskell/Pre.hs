@@ -43,6 +43,7 @@ module Pre (
     sortPair,
     HListF (..),
     foldHListF,
+    foldHListF0,
     mapHListF,
     (/\),
     (/\\),
@@ -150,6 +151,10 @@ foldHListF :: (forall x xs. f x -> r xs -> r (x ': xs)) -> r '[] -> HListF f as 
 foldHListF f e = \case
     HNilF -> e
     HConsF x xs -> f x $ foldHListF f e xs
+foldHListF0 :: (forall x. f x -> r -> r) -> r -> HListF f as -> r
+foldHListF0 f e = \case
+    HNilF -> e
+    HConsF x xs -> f x $ foldHListF0 f e xs
 mapHListF :: (forall a. f a -> g a) -> HListF f as -> HListF g as
 mapHListF t = foldHListF (\x r -> HConsF (t x) $ r) HNilF
 
