@@ -42,6 +42,7 @@ module Pre (
     adjacentPairs,
     sortPair,
     HListF (..),
+    foldHListF,
     mapHListF,
     fromHListF,
     unHListF,
@@ -149,20 +150,19 @@ data HListF (f :: Type -> Type) (as :: List Type) :: Type where
         HListF f as ->
         HListF f (a ': as)
 
+foldHListF :: (forall x xs. f x -> r xs -> r (x ': xs)) -> r '[] -> HListF f as -> r as
+foldHListF f e = \case
+    HNilF -> e
+    HConsF x xs -> f x $ foldHListF f e xs
+
 mapHListF :: (forall a. f a -> g a) -> HListF f as -> HListF g as
-mapHListF t = \case
-    HNilF -> HNilF
-    HConsF x xs -> HConsF (t x) $ mapHListF t xs
+mapHListF t = foldHListF (\x r -> HConsF (t x) $ r) HNilF
 
 fromHListF :: HListF Identity as -> HList as
-fromHListF = \case
-    HNilF -> HNil
-    HConsF (Identity x) xs -> HCons x $ fromHListF xs
+fromHListF = foldHListF (\(Identity x) r -> HCons x r) HNil
 
 unHListF :: HListF (Const b) as -> List b
-unHListF = \case
-    HNilF -> []
-    HConsF (Const x) xs -> x : unHListF xs
+unHListF = getConst . foldHListF (\(Const x) (Const r) -> Const $ x : r) (Const [])
 
 instance Semigroup (TestDefM a b ()) where
     (<>) = (>>)
