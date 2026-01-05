@@ -35,13 +35,16 @@ puzzle =
                     pure $ Seq.fromList $ takeUntil noneAccessible frameStream
                 )
                 let nFrames = if isRealData then 58 else 9
+                    lookupFrame n frames =
+                        maybe (fail $ "frame list index not found: " <> show n) pure $
+                            Seq.lookup n frames
                  in map
                         ( \n ->
                             TestTree
                                 (mkTestName $ show n)
-                                ( \frames ->
-                                    golden (path <> "frames/" <> show n) $
-                                        maybe "frame list too short!" drawGrid (Seq.lookup n frames)
+                                ( \frames -> do
+                                    g <- lookupFrame n frames
+                                    golden (path <> "frames/" <> show n) $ drawGrid g
                                 )
                                 []
                         )
@@ -50,7 +53,7 @@ puzzle =
                                 "end"
                                 ( \frames -> do
                                     assertEqual (nFrames + 1) (Seq.length frames)
-                                    Just g <- pure $ Seq.lookup nFrames frames
+                                    g <- lookupFrame nFrames frames
                                     assert "accessible tile found" $ noneAccessible g
                                 )
                                 []
