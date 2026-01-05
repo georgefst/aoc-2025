@@ -47,14 +47,11 @@ main =
                                     mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
                          in pure (input, rs, os)
                     )
-                    $ ( flip map ([0 :: Int .. foldHListF0 (const succ) 0 parts - 1]) $
-                            \n@(show . succ -> nt) ->
-                                TestTree
-                                    (mkTestName nt)
-                                    ( \(_, rs, _) -> do
-                                        golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ (rs !! n) <> "\n"
-                                    )
-                                    []
+                    $ ( [0 :: Int .. foldHListF0 (const succ) 0 parts - 1] <&> \n@(show . succ -> nt) ->
+                            TestTree
+                                (mkTestName nt)
+                                (\(_, rs, _) -> golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ (rs !! n) <> "\n")
+                                []
                       )
                         <> let ts = extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
                             in if null ts
