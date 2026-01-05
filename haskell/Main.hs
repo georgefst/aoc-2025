@@ -3,6 +3,7 @@ module Main (main) where
 import Pre
 
 import Data.Functor.Contravariant
+import Data.List ((!!))
 import Data.Text.IO qualified as T
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day10 qualified as Day10
@@ -14,11 +15,13 @@ import Puzzles.Day6 qualified as Day6
 import Puzzles.Day7 qualified as Day7
 import Puzzles.Day8 qualified as Day8
 import Puzzles.Day9 qualified as Day9
+import Text.Pretty.Simple (pPrintForceColor)
 
 main :: IO ()
 main =
-    sydTest $ doNotRandomiseExecutionOrder $ for_ enumerate \isRealData@(bool "examples" "real" -> t) ->
-        describe t $ for_
+    (pPrintForceColor =<<) $ runTests () $ TestTree "tests" pure $ flip map enumerate \isRealData@(bool "examples" "real" -> t) ->
+        TestTree (mkTestName t) (\() -> pure ()) $ flip
+            map
             [ Day1.puzzle
             , Day2.puzzle
             , Day3.puzzle
@@ -38,11 +41,26 @@ main =
                             . runParser (parser isRealData <* eof) fp
                             =<< T.readFile fp
                  in
-                    describe pt do
-                        input <- liftIO $ parseFile $ "../inputs/" <> t <> "/" <> pt
-                        let (rs, os) =
-                                (foldHListF0 ((:) . fst) [] &&& foldHListF (HCons . snd) HNil) $
-                                    mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
-                        for_ (zip [1 :: Int ..] rs) $ uncurry $ \(show -> n) ->
-                            it n . pureGoldenTextFile ("../outputs/" <> t <> "/" <> pt <> "/" <> n) . (<> "\n")
-                        describe "extra" $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/") input os
+                    TestTree
+                        (mkTestName pt)
+                        ( \() -> do
+                            input <- liftIO $ parseFile $ "../inputs/" <> t <> "/" <> pt
+                            let (rs, os) =
+                                    (foldHListF0 ((:) . fst) [] &&& foldHListF (HCons . snd) HNil) $
+                                        mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
+                            pure (input, rs, os)
+                        )
+                        $ ( flip map ([0 :: Int .. hlistfLength parts - 1]) $
+                                \n@(show . succ -> nt) ->
+                                    TestTree
+                                        (mkTestName nt)
+                                        ( \(_, rs, _) -> do
+                                            golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ (rs !! n) <> "\n"
+                                        )
+                                        []
+                          )
+                            <> [ TestTree
+                                    "extra"
+                                    (\(input, _, os) -> pure (input, os))
+                                    $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
+                               ]

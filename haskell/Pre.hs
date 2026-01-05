@@ -1,6 +1,5 @@
 {-# LANGUAGE PackageImports #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Pre (
     module BasePrelude,
@@ -30,7 +29,6 @@ module Pre (
     module Data.Word,
     module Linear,
     module Safe,
-    module Test.Syd,
     module Text.Megaparsec,
     module Text.Megaparsec.Char,
     module Text.Megaparsec.Char.Lexer,
@@ -41,14 +39,25 @@ module Pre (
     allUnorderedPairs,
     adjacentPairs,
     sortPair,
+    HList (..),
+    hlistLength,
     HListF (..),
     foldHListF,
     foldHListF0,
     mapHListF,
+    hlistfLength,
     (/\),
     (/\\),
     nil,
     Fanout (..),
+    TestTree (..),
+    TestName,
+    mkTestName,
+    getTestTree,
+    runTests,
+    assertEqual,
+    assert,
+    golden,
 )
 where
 
@@ -66,7 +75,9 @@ import "base" Prelude as BasePrelude hiding (
  )
 
 import Control.Applicative
+import Control.Exception (SomeException)
 import Control.Monad
+import Control.Monad.Catch (MonadCatch, try)
 import Control.Monad.Loops
 import Control.Monad.State
 import Data.Bifunctor
@@ -85,16 +96,18 @@ import Data.Maybe
 import Data.Ord
 import Data.Sequence (Seq)
 import Data.Stream.Infinite (Stream ((:>)))
+import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
+import Data.Text.IO qualified as T
 import Data.Traversable
+import Data.Tree
 import Data.Tuple.Extra ((&&&))
 import Data.Void
 import Data.Word
 import Linear (V2 (..))
 import Safe
-import Test.Syd
 import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
@@ -103,7 +116,7 @@ data Puzzle = forall input outputs. Puzzle
     { number :: Word
     , parser :: Bool -> Parsec Void Text input
     , parts :: PuzzleParts input outputs
-    , extraTests :: Bool -> FilePath -> input -> HList outputs -> Spec
+    , extraTests :: Bool -> FilePath -> [TestTree IO (input, HList outputs)]
     }
 
 digit :: (Token s ~ Char, Num b, MonadParsec e s f) => f b
@@ -141,6 +154,17 @@ infixr 9 /\
 nil :: PuzzleParts input '[]
 nil = HNilF
 
+data HList (as :: List Type) :: Type where
+    HNil :: HList '[]
+    HCons ::
+        a ->
+        HList as ->
+        HList (a ': as)
+hlistLength :: HList r -> Int
+hlistLength = \case
+    HNil -> 0
+    HCons _ l -> 1 + hlistLength l
+
 data HListF (f :: Type -> Type) (as :: List Type) :: Type where
     HNilF :: HListF f '[]
     HConsF ::
@@ -157,10 +181,47 @@ foldHListF0 f e = \case
     HConsF x xs -> f x $ foldHListF0 f e xs
 mapHListF :: (forall a. f a -> g a) -> HListF f as -> HListF g as
 mapHListF t = foldHListF (\x r -> HConsF (t x) $ r) HNilF
-
-instance Semigroup (TestDefM a b ()) where
-    (<>) = (>>)
-instance Monoid (TestDefM a b ()) where
-    mempty = pure ()
+hlistfLength :: HListF f r -> Int
+hlistfLength = \case
+    HNilF -> 0
+    HConsF _ l -> 1 + hlistfLength l
 
 newtype Fanout f g a = Fanout (f a, g a)
+
+data TestTree m input where
+    TestTree :: TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input
+
+data TestResult
+    = Pass TestName [TestResult]
+    | Fail TestName SomeExceptionLegalShow
+    deriving (Show)
+
+newtype TestName = TestName String
+    deriving newtype (IsString, Show)
+
+mkTestName :: String -> TestName
+mkTestName = TestName
+
+newtype SomeExceptionLegalShow = SomeExceptionLegalShow SomeException
+instance Show SomeExceptionLegalShow where
+    show (SomeExceptionLegalShow e) = show $ show e
+
+getTestTree :: TestTree m r -> Tree TestName
+getTestTree (TestTree name _ ts) = Node name $ map getTestTree ts
+
+runTests :: (MonadCatch m) => a -> TestTree m a -> m TestResult
+runTests x (TestTree name f ts) =
+    Control.Monad.Catch.try (f x) >>= \case
+        Left e ->
+            pure $ Fail name $ SomeExceptionLegalShow e
+        Right r ->
+            Pass name <$> for ts (runTests r)
+
+assertEqual :: (Eq p, MonadFail f) => p -> p -> f ()
+assertEqual expected actual = assert "not equal" (expected == actual)
+assert :: (MonadFail f) => String -> Bool -> f ()
+assert s b = if b then pure () else fail s
+golden :: FilePath -> Text -> IO ()
+golden p x = do
+    expected <- T.readFile p
+    if expected == x then pure () else fail "golden test failure"

@@ -21,22 +21,41 @@ puzzle =
                         T.show $ countRolls g - countRolls (fst $ S.head $ S.filter (noneAccessible . snd) fs)
                    )
                 /\\ nil
-        , extraTests = \isRealData path input (HCons _ (HCons (_, fmap snd -> frameStream) HNil)) -> do
-            it "round trip" do
-                t <- T.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"
-                drawGrid (mkGrid input <&> \case InEmpty -> OutEmpty; InRoll -> OutRoll) `shouldBe` t
-            describe "frames" do
-                let frames = Seq.fromList $ takeUntil noneAccessible frameStream
+        , extraTests = \isRealData path ->
+            [ TestTree
+                "round trip"
+                ( \(input, _) -> do
+                    t <- T.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"
+                    assertEqual t $ drawGrid (mkGrid input <&> \case InEmpty -> OutEmpty; InRoll -> OutRoll)
+                )
+                []
+            , TestTree
+                "frames"
+                ( \(_, (HCons _ (HCons (_, fmap snd -> frameStream) HNil))) ->
+                    pure $ Seq.fromList $ takeUntil noneAccessible frameStream
+                )
                 let nFrames = if isRealData then 58 else 9
-                for_ [0 .. nFrames] \n ->
-                    it (show n) . pureGoldenTextFile (path <> "frames/" <> show n) $
-                        maybe "frame list too short!" drawGrid (Seq.lookup n frames)
-                it "end" do
-                    -- we can't actually define `nFrames` this way as it would messing up reporting,
-                    -- due to forcing the expensive evaluation during test tree construction
-                    Seq.length frames `shouldBe` (nFrames + 1)
-                    Just g <- pure $ Seq.lookup nFrames frames
-                    (g `shouldSatisfyNamed` "accessible tile found") noneAccessible
+                 in map
+                        ( \n ->
+                            TestTree
+                                (mkTestName $ show n)
+                                ( \frames ->
+                                    golden (path <> "frames/" <> show n) $
+                                        maybe "frame list too short!" drawGrid (Seq.lookup n frames)
+                                )
+                                []
+                        )
+                        [0 .. nFrames]
+                        <> [ TestTree
+                                "end"
+                                ( \frames -> do
+                                    assertEqual (nFrames + 1) (Seq.length frames)
+                                    Just g <- pure $ Seq.lookup nFrames frames
+                                    assert "accessible tile found" $ noneAccessible g
+                                )
+                                []
+                           ]
+            ]
         }
 
 newtype Grid a = Grid (Seq (Seq (V2 Int, a)))
