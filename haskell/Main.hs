@@ -34,30 +34,30 @@ main =
             , Day10.puzzle
             ]
             \Puzzle{number = show -> pt, parser, parts, extraTests} ->
-                    TestTree
-                        (mkTestName pt)
-                        ( \() -> do
-                            let fp = "../inputs/" <> t <> "/" <> pt
-                            input <-
-                                either (fail . ("parse failure: " <>) . errorBundlePretty) pure
-                                    . runParser (parser isRealData <* eof) fp
-                                    =<< T.readFile fp
-                            let (rs, os) =
-                                    (foldHListF0 ((:) . fst) [] &&& foldHListF (HCons . snd) HNil) $
-                                        mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
-                             in pure (input, rs, os)
-                        )
-                        $ ( flip map ([0 :: Int .. hlistfLength parts - 1]) $
-                                \n@(show . succ -> nt) ->
-                                    TestTree
-                                        (mkTestName nt)
-                                        ( \(_, rs, _) -> do
-                                            golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ (rs !! n) <> "\n"
-                                        )
-                                        []
-                          )
-                            <> [ TestTree
-                                    "extra"
-                                    (\(input, _, os) -> pure (input, os))
-                                    $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
-                               ]
+                TestTree
+                    (mkTestName pt)
+                    ( \() -> do
+                        let fp = "../inputs/" <> t <> "/" <> pt
+                        input <-
+                            either (fail . ("parse failure: " <>) . errorBundlePretty) pure
+                                . runParser (parser isRealData <* eof) fp
+                                =<< T.readFile fp
+                        let (rs, os) =
+                                (foldHListF0 ((:) . fst) [] &&& foldHListF (HCons . snd) HNil) $
+                                    mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
+                         in pure (input, rs, os)
+                    )
+                    $ ( flip map ([0 :: Int .. hlistfLength parts - 1]) $
+                            \n@(show . succ -> nt) ->
+                                TestTree
+                                    (mkTestName nt)
+                                    ( \(_, rs, _) -> do
+                                        golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ (rs !! n) <> "\n"
+                                    )
+                                    []
+                      )
+                        <> [ TestTree
+                                "extra"
+                                (\(input, _, os) -> pure (input, os))
+                                $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
+                           ]
