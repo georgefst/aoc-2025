@@ -1,5 +1,6 @@
 {-# LANGUAGE PackageImports #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Pre (
     module BasePrelude,
@@ -44,10 +45,12 @@ module Pre (
     foldHListF,
     foldHListF0,
     mapHListF,
+    lookupHList,
     (/\),
     (/\\),
     nil,
     Fanout (..),
+    Length,
     TestTree (..),
     TestName,
     mkTestName,
@@ -81,6 +84,7 @@ import Control.Monad.State
 import Data.Bifunctor
 import Data.Bool
 import Data.Char
+import Data.Finite
 import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimumBy)
 import Data.Foldable1
 import Data.Function
@@ -104,13 +108,14 @@ import Data.Tree
 import Data.Tuple.Extra ((&&&))
 import Data.Void
 import Data.Word
+import GHC.TypeNats (KnownNat, Nat, type (+))
 import Linear (V2 (..))
 import Safe
 import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
 
-data Puzzle = forall input outputs. Puzzle
+data Puzzle = forall input outputs. (KnownNat (Length outputs)) => Puzzle
     { number :: Word
     , parser :: Bool -> Parsec Void Text input
     , parts :: PuzzleParts input outputs
@@ -176,7 +181,16 @@ foldHListF0 f e = \case
 mapHListF :: (forall a. f a -> g a) -> HListF f as -> HListF g as
 mapHListF t = foldHListF (\x r -> HConsF (t x) $ r) HNilF
 
+lookupHList :: (forall a. f a -> r) -> HListF f as -> Finite (Length as) -> r
+lookupHList f = \case
+    HNilF -> absurd . separateZero
+    HConsF x xs -> maybe (f x) (lookupHList f xs) . unshift
+
 newtype Fanout f g a = Fanout (f a, g a)
+
+type family Length as :: Nat where
+    Length '[] = 0
+    Length (x ': xs) = Length xs + 1
 
 data TestTree m input where
     TestTree :: TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input

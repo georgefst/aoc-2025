@@ -55,6 +55,7 @@ executable aoc
         exceptions,
         extra,
         filepath,
+        finite-typelits,
         lens,
         linear,
         massiv,

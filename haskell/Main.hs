@@ -2,8 +2,8 @@ module Main (main) where
 
 import Pre
 
+import Data.Finite
 import Data.Functor.Contravariant
-import Data.List ((!!))
 import Data.Text.IO qualified as T
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day10 qualified as Day10
@@ -43,14 +43,14 @@ main =
                                 . runParser (parser isRealData <* eof) fp
                                 =<< T.readFile fp
                         let (rs, os) =
-                                (foldHListF0 ((:) . fst) [] &&& foldHListF (HCons . snd) HNil) $
+                                (lookupHList fst &&& foldHListF (HCons . snd) HNil) $
                                     mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
                          in pure (input, rs, os)
                     )
-                    $ ( [0 :: Int .. foldHListF0 (const succ) 0 parts - 1] <&> \n@(show . succ -> nt) ->
+                    $ ( finites <&> \(n@(show . succ @Int . fromIntegral -> nt)) ->
                             TestTree
                                 (mkTestName nt)
-                                (\(_, rs, _) -> golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ (rs !! n) <> "\n")
+                                (\(_, rs, _) -> golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ rs n <> "\n")
                                 []
                       )
                         <> let ts = extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
