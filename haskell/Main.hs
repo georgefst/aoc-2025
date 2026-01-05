@@ -20,7 +20,7 @@ import Text.Pretty.Simple (pPrintForceColor)
 main :: IO ()
 main =
     (pPrintForceColor =<<) $ runTests () $ TestTree "tests" pure $ flip map enumerate \isRealData@(bool "examples" "real" -> t) ->
-        TestTree (mkTestName t) (\() -> pure ()) $ flip
+        TestTree (mkTestName t) pure $ flip
             map
             [ Day1.puzzle
             , Day2.puzzle
@@ -33,22 +33,19 @@ main =
             , Day9.puzzle
             , Day10.puzzle
             ]
-            \Puzzle{number, parser, parts, extraTests} ->
-                let
-                    pt = show number
-                    parseFile fp =
-                        either (fail . ("parse failure: " <>) . errorBundlePretty) pure
-                            . runParser (parser isRealData <* eof) fp
-                            =<< T.readFile fp
-                 in
+            \Puzzle{number = show -> pt, parser, parts, extraTests} ->
                     TestTree
                         (mkTestName pt)
                         ( \() -> do
-                            input <- liftIO $ parseFile $ "../inputs/" <> t <> "/" <> pt
+                            let fp = "../inputs/" <> t <> "/" <> pt
+                            input <-
+                                either (fail . ("parse failure: " <>) . errorBundlePretty) pure
+                                    . runParser (parser isRealData <* eof) fp
+                                    =<< T.readFile fp
                             let (rs, os) =
                                     (foldHListF0 ((:) . fst) [] &&& foldHListF (HCons . snd) HNil) $
                                         mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
-                            pure (input, rs, os)
+                             in pure (input, rs, os)
                         )
                         $ ( flip map ([0 :: Int .. hlistfLength parts - 1]) $
                                 \n@(show . succ -> nt) ->
