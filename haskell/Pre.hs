@@ -40,12 +40,10 @@ module Pre (
     adjacentPairs,
     sortPair,
     HList (..),
-    hlistLength,
     HListF (..),
     foldHListF,
     foldHListF0,
     mapHListF,
-    hlistfLength,
     (/\),
     (/\\),
     nil,
@@ -160,10 +158,6 @@ data HList (as :: List Type) :: Type where
         a ->
         HList as ->
         HList (a ': as)
-hlistLength :: HList r -> Int
-hlistLength = \case
-    HNil -> 0
-    HCons _ l -> 1 + hlistLength l
 
 data HListF (f :: Type -> Type) (as :: List Type) :: Type where
     HNilF :: HListF f '[]
@@ -181,10 +175,6 @@ foldHListF0 f e = \case
     HConsF x xs -> f x $ foldHListF0 f e xs
 mapHListF :: (forall a. f a -> g a) -> HListF f as -> HListF g as
 mapHListF t = foldHListF (\x r -> HConsF (t x) $ r) HNilF
-hlistfLength :: HListF f r -> Int
-hlistfLength = \case
-    HNilF -> 0
-    HConsF _ l -> 1 + hlistfLength l
 
 newtype Fanout f g a = Fanout (f a, g a)
 
