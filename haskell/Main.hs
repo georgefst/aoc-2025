@@ -56,8 +56,7 @@ main =
                                     )
                                     []
                       )
-                        <> [ TestTree
-                                "extra"
-                                (\(input, _, os) -> pure (input, os))
-                                $ extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
-                           ]
+                        <> let ts = extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
+                            in if null ts
+                                then []
+                                else [TestTree "extra" (\(input, _, os) -> pure (input, os)) ts]
