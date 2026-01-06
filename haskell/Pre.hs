@@ -27,6 +27,7 @@ module Pre (
     module Data.Text,
     module Data.Text.Encoding,
     module Data.Traversable,
+    module Data.Tree,
     module Data.Tuple.Extra,
     module Data.Void,
     module Data.Word,

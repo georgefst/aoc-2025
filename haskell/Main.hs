@@ -19,7 +19,7 @@ import Text.Pretty.Simple (pPrintForceColor)
 
 main :: IO ()
 main = do
-    pPrintForceColor $ getTestTree tests
+    putStrLn $ drawTree $ show <$> getTestTree tests
     pPrintForceColor =<< runTests () tests
 
 tests :: TestTree IO ()
