@@ -39,6 +39,7 @@ module Pre (
     module Text.Megaparsec.Char.Lexer,
     module Text.Pretty.Simple,
     Puzzle (..),
+    mwhen,
     (<<$>>),
     (<<&>>),
     takeUntil,
@@ -145,6 +146,9 @@ data Puzzle = forall input outputs. (KnownNat (Length outputs), NFData input) =>
 (<<$>>) = fmap . fmap
 (<<&>>) :: (Functor f1, Functor f2) => f1 (f2 a) -> (a -> b) -> f1 (f2 b)
 (<<&>>) = flip (<<$>>)
+
+mwhen :: (Monoid p) => Bool -> p -> p
+mwhen b x = if b then x else mempty
 
 takeUntil :: (Foldable t) => (a -> Bool) -> t a -> [a]
 takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
