@@ -57,7 +57,9 @@ module Pre (
     withConstrained,
     Fanout (..),
     Length,
-    TestTree (..),
+    TestTree,
+    test,
+    testLazy,
     TestName,
     mkTestName,
     getTestTree,
@@ -130,7 +132,7 @@ data Puzzle = forall input outputs. (KnownNat (Length outputs), NFData input) =>
     { number :: Word
     , parser :: Bool -> Parsec Void Text input
     , parts :: PuzzleParts input outputs
-    , extraTests :: Bool -> FilePath -> [TestTree IO (input, HListC NFData outputs)]
+    , extraTests :: Bool -> FilePath -> [TestTree IO (input, HList outputs)]
     }
 
 digit :: (Token s ~ Char, Num b, MonadParsec e s f) => f b
@@ -158,13 +160,13 @@ adjacentPairs = \case
 sortPair :: (Ord a) => (a, a) -> (a, a)
 sortPair (a, b) = if a <= b then (a, b) else (b, a)
 
-type PuzzleParts input = HListF (Compose (Fanout ((->) input) (Op Text)) (Constrained NFData))
+type PuzzleParts input = HListF ((Fanout ((->) input) (Op Text)))
 infixr 9 /\\
-(/\\) :: (NFData output) => (input -> output, output -> Text) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\\) (f, o) = HConsF $ Compose $ Fanout (Constrained . f, Op $ withConstrained o)
+(/\\) :: (input -> output, output -> Text) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
+(/\\) (f, o) = HConsF $ Fanout (f, Op o)
 infixr 9 /\
-(/\) :: (Show output, NFData output) => (input -> output) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\) f = HConsF $ Compose $ Fanout (Constrained . f, Op $ withConstrained T.show)
+(/\) :: (Show output) => (input -> output) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
+(/\) f = HConsF $ Fanout (f, Op T.show)
 nil :: PuzzleParts input '[]
 nil = HNilF
 
@@ -221,7 +223,21 @@ type family Length as :: Nat where
     Length (x ': xs) = Length xs + 1
 
 data TestTree m input where
-    TestTree :: (NFData output) => TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input
+    TestTree :: TestName -> TestCase m input output -> [TestTree m output] -> TestTree m input
+
+data TestCase m input output where
+    TestCase :: (NFData output) => (input -> m output) -> TestCase m input output
+    TestCaseLazy :: (input -> m output) -> TestCase m input output
+
+-- | See `testLazy` for avoiding the `NFData` constraint.
+test :: (NFData output) => TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input
+test n f = TestTree n $ TestCase f
+
+{- | This is `test` without the `NFData` constraint.
+It doesn't force the output before completion, which means that reported timings may be less accurate.
+-}
+testLazy :: TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input
+testLazy n f = TestTree n $ TestCaseLazy f
 
 data TestResult
     = Pass TestName NominalDiffTime [TestResult]
@@ -242,17 +258,20 @@ getTestTree :: TestTree m r -> Tree TestName
 getTestTree (TestTree name _ ts) = Node name $ map getTestTree ts
 
 runTests :: (MonadIO m, MonadCatch m) => a -> TestTree m a -> m TestResult
-runTests r0 (TestTree name f ts) =
-    Control.Monad.Catch.try (timed $ f r0) >>= \case
+runTests r0 (TestTree name tc ts) =
+    Control.Monad.Catch.try (runTest tc) >>= \case
         Left e ->
             pure $ Fail name $ SomeExceptionLegalShow e
         Right (r, dt) ->
             Pass name dt <$> for ts (runTests r)
   where
-    timed x = do
+    runTest = \case
+        TestCase f -> timed (liftIO . evaluate . DeepSeq.force) $ f r0
+        TestCaseLazy f -> timed pure $ f r0
+    timed f x = do
         t0 <- liftIO getCurrentTime
         r <- x
-        rf <- liftIO $ evaluate $ DeepSeq.force r
+        rf <- f r
         t1 <- liftIO getCurrentTime
         pure (rf, diffUTCTime t1 t0)
 

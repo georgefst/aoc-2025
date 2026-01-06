@@ -6,7 +6,6 @@ import Data.Sequence qualified as Seq
 import Data.Stream.Infinite qualified as S
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
-import Control.DeepSeq (rnf)
 
 puzzle :: Puzzle
 puzzle =
@@ -23,16 +22,16 @@ puzzle =
                    )
                 /\\ nil
         , extraTests = \isRealData path ->
-            [ TestTree
+            [ test
                 "round trip"
                 ( \(input, _) -> do
                     t <- T.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"
                     assertEqual t $ drawGrid (mkGrid input <&> \case InEmpty -> OutEmpty; InRoll -> OutRoll)
                 )
                 []
-            , TestTree
+            , test
                 "frames"
-                ( \(_, (HConsC _ (HConsC (_, fmap snd -> frameStream) HNilC))) ->
+                ( \(_, (HCons _ (HCons (_, fmap snd -> frameStream) HNil))) ->
                     pure $ Seq.fromList $ takeUntil noneAccessible frameStream
                 )
                 let nFrames = if isRealData then 58 else 9
@@ -41,7 +40,7 @@ puzzle =
                             Seq.lookup n frames
                  in map
                         ( \n ->
-                            TestTree
+                            test
                                 (mkTestName $ show n)
                                 ( \frames -> do
                                     g <- lookupFrame n frames
@@ -50,7 +49,7 @@ puzzle =
                                 []
                         )
                         [0 .. nFrames]
-                        <> [ TestTree
+                        <> [ test
                                 "end"
                                 ( \frames -> do
                                     assertEqual (nFrames + 1) (Seq.length frames)
@@ -134,7 +133,3 @@ takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
 
 unfoldMutual :: (a -> b) -> (b -> a) -> a -> Stream (a, b)
 unfoldMutual f g a = let b = f a in (a, b) :> unfoldMutual f g (g b)
-
--- TODO this is a junk instance which sort-of works because we never truly care about forcing this
-instance NFData (Stream a) where
-    rnf a = ()

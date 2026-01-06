@@ -19,8 +19,8 @@ import Text.Pretty.Simple (pPrintForceColor)
 
 main :: IO ()
 main =
-    (pPrintForceColor =<<) $ runTests () $ TestTree "tests" pure $ flip map enumerate \isRealData@(bool "examples" "real" -> t) ->
-        TestTree (mkTestName t) pure $ flip
+    (pPrintForceColor =<<) $ runTests () $ test "tests" pure $ flip map enumerate \isRealData@(bool "examples" "real" -> t) ->
+        test (mkTestName t) pure $ flip
             map
             [ Day1.puzzle
             , Day2.puzzle
@@ -34,7 +34,7 @@ main =
             , Day10.puzzle
             ]
             \Puzzle{number = show -> pt, parser, parts, extraTests} ->
-                TestTree
+                testLazy
                     (mkTestName pt)
                     ( \() -> do
                         let fp = "../inputs/" <> t <> "/" <> pt
@@ -43,12 +43,12 @@ main =
                                 . runParser (parser isRealData <* eof) fp
                                 =<< T.readFile fp
                         let (rs, os) =
-                                (lookupHList (fst . getCompose) &&& foldHListF (withConstrained HConsC . snd . getCompose) HNilC) $
-                                    mapHListF (\(Compose (Fanout (f, Op o))) -> Compose $ (o &&& id) $ f input) parts
+                                (lookupHList fst &&& foldHListF (HCons . snd) HNil) $
+                                    mapHListF (\((Fanout (f, Op o))) -> (o &&& id) $ f input) parts
                          in pure (input, rs, os)
                     )
                     $ ( finites <&> \(n@(show . succ @Int . fromIntegral -> nt)) ->
-                            TestTree
+                            test
                                 (mkTestName nt)
                                 (\(_, rs, _) -> golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ rs n <> "\n")
                                 []
@@ -56,4 +56,4 @@ main =
                         <> let ts = extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
                             in if null ts
                                 then []
-                                else [TestTree "extra" (\(input, _, os) -> pure (input, os)) ts]
+                                else [testLazy "extra" (\(input, _, os) -> pure (input, os)) ts]
