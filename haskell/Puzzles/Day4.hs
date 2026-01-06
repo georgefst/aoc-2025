@@ -123,13 +123,5 @@ noneAccessible (Grid g) = not $ any (elem OutAccessible . fmap snd) g
 countRolls :: Grid InTile -> Int
 countRolls (Grid g) = length $ concatMap (filter (== InRoll) . toList . fmap snd) g
 
-(<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
-(<<$>>) = fmap . fmap
-(<<&>>) :: (Functor f1, Functor f2) => f1 (f2 a) -> (a -> b) -> f1 (f2 b)
-(<<&>>) = flip (<<$>>)
-
-takeUntil :: (Foldable t) => (a -> Bool) -> t a -> [a]
-takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
-
 unfoldMutual :: (a -> b) -> (b -> a) -> a -> Stream (a, b)
 unfoldMutual f g a = let b = f a in (a, b) :> unfoldMutual f g (g b)

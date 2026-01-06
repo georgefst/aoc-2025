@@ -39,6 +39,9 @@ module Pre (
     module Text.Megaparsec.Char.Lexer,
     module Text.Pretty.Simple,
     Puzzle (..),
+    (<<$>>),
+    (<<&>>),
+    takeUntil,
     digit,
     digitsToInt,
     listIndex,
@@ -137,6 +140,14 @@ data Puzzle = forall input outputs. (KnownNat (Length outputs), NFData input) =>
     , parts :: PuzzleParts input outputs
     , extraTests :: Bool -> FilePath -> [TestTree IO (input, HList outputs)]
     }
+
+(<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
+(<<$>>) = fmap . fmap
+(<<&>>) :: (Functor f1, Functor f2) => f1 (f2 a) -> (a -> b) -> f1 (f2 b)
+(<<&>>) = flip (<<$>>)
+
+takeUntil :: (Foldable t) => (a -> Bool) -> t a -> [a]
+takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
 
 digit :: (Token s ~ Char, Num b, MonadParsec e s f) => f b
 digit = fromIntegral . digitToInt <$> digitChar
