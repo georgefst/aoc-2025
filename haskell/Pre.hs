@@ -315,9 +315,7 @@ displayTestResultsConsole testResult =
         T.show res
             <> T.singleton '.'
             <> T.take (if isNothing unit then 3 else 2) (T.show frac <> "000")
-            <> case unit of
-                Nothing -> setColour Dull Red
-                Just (u, h) -> setColour Dull h <> T.singleton u
+            <> foldMap T.singleton unit
             <> T.singleton 's'
       where
         (frac, res, unit) = case duration of
@@ -331,10 +329,10 @@ displayTestResultsConsole testResult =
                         ( carried
                         , r
                         , Just case iterations of
-                            3 -> ('m', Yellow)
-                            2 -> ('μ', Green)
-                            1 -> ('n', Green)
-                            _ -> ('p', Green)
+                            3 -> 'm'
+                            2 -> 'μ'
+                            1 -> 'n'
+                            _ -> 'p'
                         )
                     (d, r) -> go (succ iterations) r d
     sgr = T.pack . setSGRCode
