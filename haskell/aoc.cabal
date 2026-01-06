@@ -45,6 +45,7 @@ executable aoc
         -with-rtsopts=-N
     build-depends:
         base >= 4.14,
+        ansi-terminal,
         async,
         binary,
         bytestring,

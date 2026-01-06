@@ -5,6 +5,7 @@ import Pre
 import Data.Finite
 import Data.Functor.Contravariant
 import Data.Text.IO qualified as T
+import Data.Text.Lazy.IO qualified as TL
 import Puzzles.Day1 qualified as Day1
 import Puzzles.Day10 qualified as Day10
 import Puzzles.Day2 qualified as Day2
@@ -19,7 +20,7 @@ import Puzzles.Day9 qualified as Day9
 main :: IO ()
 main = do
     putStrLn $ drawTree $ show <$> getTestTree tests
-    pPrintForceColor =<< runTests () tests
+    TL.putStrLn . displayTestResultsConsole =<< runTests () tests
 
 tests :: TestTree IO ()
 tests =

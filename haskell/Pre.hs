@@ -69,6 +69,7 @@ module Pre (
     TestName,
     mkTestName,
     getTestTree,
+    displayTestResultsConsole,
     runTests,
     assertEqual,
     assert,
@@ -101,6 +102,7 @@ import Data.Bifunctor
 import Data.Bool
 import Data.Char
 import Data.Finite
+import Data.Fixed (Fixed (MkFixed))
 import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimumBy)
 import Data.Foldable1
 import Data.Function
@@ -108,7 +110,7 @@ import Data.Functor
 import Data.Functor.Compose (Compose (Compose), getCompose)
 import Data.Functor.Contravariant
 import Data.Kind (Constraint, Type)
-import Data.List (List, sortOn, transpose)
+import Data.List (List, genericLength, sortOn, transpose)
 import Data.List.Extra (dropEnd, enumerate, firstJust, notNull, splitOn)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1, tail, tails)
 import Data.Maybe
@@ -120,6 +122,7 @@ import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as T
+import Data.Text.Lazy qualified as TL
 import Data.Time
 import Data.Traversable
 import Data.Tree
@@ -130,6 +133,7 @@ import GHC.Generics (Generic)
 import GHC.TypeNats (KnownNat, Nat, type (+))
 import Linear (V2 (..))
 import Safe
+import System.Console.ANSI
 import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
@@ -274,6 +278,67 @@ instance Show SomeExceptionLegalShow where
 
 getTestTree :: TestTree m r -> Tree TestName
 getTestTree (TestTree name _ ts) = Node name $ map getTestTree ts
+
+displayTestResultsConsole :: TestResult -> TL.Text
+displayTestResultsConsole testResult =
+    displayResult 0 testResult <> TL.pack (setSGRCode [Reset])
+  where
+    displayResult indent =
+        (TL.replicate indent "  " <>) . \case
+            Pass (TestName name) dt children ->
+                TL.fromStrict (header Green '✓' name (Just dt))
+                    <> TL.concat (map (displayResult (indent + 1)) children)
+            Fail (TestName name) (SomeExceptionLegalShow e) ->
+                TL.fromStrict
+                    ( header Red '✗' name Nothing
+                        <> setColour Vivid Red
+                    )
+                    <> TL.show e
+                    <> "\n"
+    header colour icon name time =
+        setColour Vivid colour
+            <> T.singleton icon
+            <> " "
+            <> setColour Dull White
+            <> T.pack name
+            <> maybe
+                mempty
+                ( \_t@(showTime -> tt) ->
+                    "   "
+                        <> setColour Dull Black
+                        <> tt
+                )
+                time
+            <> "\n"
+    showTime (nominalDiffTimeToSeconds -> MkFixed duration) =
+        -- SI prefixes, and always exactly 2 decimal places, or 3 if there's no prefix
+        T.show res
+            <> T.singleton '.'
+            <> T.take (if isNothing unit then 3 else 2) (T.show frac <> "000")
+            <> case unit of
+                Nothing -> setColour Dull Red
+                Just (u, h) -> setColour Dull h <> T.singleton u
+            <> T.singleton 's'
+      where
+        (frac, res, unit) = case duration of
+            0 -> (0, 0, Nothing)
+            d -> go (0 :: Int) 0 d
+        go = \case
+            4 -> (,,Nothing)
+            iterations -> \carried n ->
+                case n `divMod` 1000 of
+                    (0, r) ->
+                        ( carried
+                        , r
+                        , Just case iterations of
+                            3 -> ('m', Yellow)
+                            2 -> ('μ', Green)
+                            1 -> ('n', Green)
+                            _ -> ('p', Green)
+                        )
+                    (d, r) -> go (succ iterations) r d
+    sgr = T.pack . setSGRCode
+    setColour d c = sgr [SetColor Foreground d c]
 
 runTests :: (MonadIO m, MonadCatch m) => a -> TestTree m a -> m TestResult
 runTests r0 (TestTree name tc ts) =
