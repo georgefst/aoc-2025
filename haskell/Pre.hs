@@ -279,23 +279,23 @@ instance Show SomeExceptionLegalShow where
 getTestTree :: TestTree m r -> Tree TestName
 getTestTree (TestTree name _ ts) = Node name $ map getTestTree ts
 
-displayTestResultsConsole :: TestResult -> TL.Text
-displayTestResultsConsole testResult =
+displayTestResultsConsole :: Maybe Int -> TestResult -> TL.Text
+displayTestResultsConsole terminalWidth testResult =
     displayResult 0 testResult <> TL.pack (setSGRCode [Reset])
   where
     displayResult indent =
-        (TL.replicate indent "  " <>) . \case
+        (TL.replicate (fromIntegral indent) "  " <>) . \case
             Pass (TestName name) dt children ->
-                TL.fromStrict (header Green '✓' name (Just dt))
+                TL.fromStrict (header Green '✓' name indent (Just dt))
                     <> TL.concat (map (displayResult (indent + 1)) children)
             Fail (TestName name) (SomeExceptionLegalShow e) ->
                 TL.fromStrict
-                    ( header Red '✗' name Nothing
+                    ( header Red '✗' name indent Nothing
                         <> setColour Vivid Red
                     )
                     <> TL.show e
                     <> "\n"
-    header colour icon name time =
+    header colour icon name indent time =
         setColour Vivid colour
             <> T.singleton icon
             <> " "
@@ -304,7 +304,14 @@ displayTestResultsConsole testResult =
             <> maybe
                 mempty
                 ( \_t@(showTime -> tt) ->
-                    "   "
+                    T.replicate
+                        ( fromIntegral $
+                            maybe
+                                3
+                                (\n -> n - (2 * indent + length name + T.length tt + 2))
+                                terminalWidth
+                        )
+                        " "
                         <> setColour Dull Black
                         <> tt
                 )
