@@ -15,7 +15,6 @@ import Puzzles.Day6 qualified as Day6
 import Puzzles.Day7 qualified as Day7
 import Puzzles.Day8 qualified as Day8
 import Puzzles.Day9 qualified as Day9
-import Text.Pretty.Simple (pPrintForceColor)
 
 main :: IO ()
 main = do

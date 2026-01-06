@@ -37,6 +37,7 @@ module Pre (
     module Text.Megaparsec,
     module Text.Megaparsec.Char,
     module Text.Megaparsec.Char.Lexer,
+    module Text.Pretty.Simple,
     Puzzle (..),
     digit,
     digitsToInt,
@@ -128,6 +129,7 @@ import Safe
 import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
+import Text.Pretty.Simple (pPrint, pPrintForceColor, pShow)
 
 data Puzzle = forall input outputs. (KnownNat (Length outputs), NFData input) => Puzzle
     { number :: Word
