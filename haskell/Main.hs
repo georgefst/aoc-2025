@@ -16,11 +16,11 @@ import Puzzles.Day6 qualified as Day6
 import Puzzles.Day7 qualified as Day7
 import Puzzles.Day8 qualified as Day8
 import Puzzles.Day9 qualified as Day9
-import System.Console.ANSI (getTerminalSize)
+import System.Console.Terminal.Size qualified as Terminal.Size
 
 main :: IO ()
 main = do
-    -- terminalWidth <- fmap snd <$> getTerminalSize -- TODO this doesn't work in GHCID or GHCIWatch...
+    -- terminalWidth <- fmap Terminal.Size.width <$> Terminal.Size.size -- TODO this doesn't work in GHCID or GHCIWatch...
     terminalWidth <- pure $ Just 60
     putStrLn $ drawTree $ show <$> getTestTree tests
     TL.putStrLn . displayTestResultsConsole terminalWidth =<< runTests () tests

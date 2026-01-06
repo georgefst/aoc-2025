@@ -68,6 +68,7 @@ executable aoc
         safe,
         stm,
         streams,
+        terminal-size,
         text,
         time,
         transformers,
