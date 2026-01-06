@@ -363,9 +363,9 @@ runTests r0 (TestTree name tc ts) =
         t1 <- liftIO getCurrentTime
         pure (rf, diffUTCTime t1 t0)
 
-assertEqual :: (Eq p, MonadFail f) => p -> p -> f ()
+assertEqual :: (Eq p, MonadFail m) => p -> p -> m ()
 assertEqual expected actual = assert "not equal" (expected == actual)
-assert :: (MonadFail f) => String -> Bool -> f ()
+assert :: (MonadFail m) => String -> Bool -> m ()
 assert s b = if b then pure () else fail s
 golden :: FilePath -> Text -> IO ()
 golden p x = do
