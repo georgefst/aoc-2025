@@ -43,8 +43,8 @@ main =
                                 . runParser (parser isRealData <* eof) fp
                                 =<< T.readFile fp
                         let (rs, os) =
-                                (lookupHList fst &&& foldHListF (HCons . snd) HNil) $
-                                    mapHListF (\(Fanout (f, Op o)) -> (o &&& id) $ f input) parts
+                                (lookupHList (fst . getCompose) &&& foldHListF ((\(Constrained x) -> HConsC x) . snd . getCompose) HNilC) $
+                                    mapHListF (\(Compose (Fanout (f, Op o))) -> Compose $ (o &&& id) $ f input) parts
                          in pure (input, rs, os)
                     )
                     $ ( finites <&> \(n@(show . succ @Int . fromIntegral -> nt)) ->

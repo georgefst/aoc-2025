@@ -23,7 +23,7 @@ puzzle =
         }
 
 newtype ID = ID Int
-    deriving newtype (Eq, Ord, Show, Num, Enum)
+    deriving newtype (Eq, Ord, Show, Num, Enum, NFData)
 
 isRepetition2 :: ID -> Bool
 isRepetition2 (T.show -> n) = case T.length n `divMod` 2 of

@@ -31,7 +31,7 @@ data Range = Range
     { lower :: Int
     , upper :: Int
     }
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic, NFData)
 
 rangeLength :: Range -> Int
 rangeLength r = r.upper - r.lower + 1

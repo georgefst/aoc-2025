@@ -34,7 +34,7 @@ puzzle =
         }
 
 data Light = On | Off
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic, NFData)
 flipLight :: Light -> Light
 flipLight = \case
     On -> Off
@@ -42,10 +42,12 @@ flipLight = \case
 
 newtype Lights = Lights (IM.IntMap Light)
     deriving (Eq, Ord, Show)
+    deriving newtype (NFData)
 allOff :: Lights -> Bool
 allOff (Lights ls) = all (== Off) $ map snd $ IM.toList ls
 
 newtype Switch = Switch [Int]
     deriving (Eq, Ord, Show)
+    deriving newtype (NFData)
 applySwitch :: Switch -> Lights -> Lights
 applySwitch (Switch ss) (Lights ls) = Lights $ foldl' (flip $ IM.adjust flipLight) ls ss

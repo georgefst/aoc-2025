@@ -35,16 +35,16 @@ puzzle =
         }
 
 data Direction = L | R
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic, NFData)
 
 newtype Pos = Pos Int
-    deriving newtype (Eq, Ord, Show, Num)
+    deriving newtype (Eq, Ord, Show, Num, NFData)
 
 newtype Inc = Inc Int
-    deriving newtype (Eq, Ord, Show, Num)
+    deriving newtype (Eq, Ord, Show, Num, NFData)
 
 newtype Count = Count Int
-    deriving newtype (Eq, Ord, Show, Num)
+    deriving newtype (Eq, Ord, Show, Num, NFData)
 
 step :: Inc -> Direction -> Pos -> (Count, Pos)
 step (Inc i) d (Pos p) = bimap Count Pos case d of

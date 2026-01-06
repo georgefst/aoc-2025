@@ -5,6 +5,7 @@
 module Pre (
     module BasePrelude,
     module Control.Applicative,
+    module Control.DeepSeq,
     module Control.Monad,
     module Control.Monad.Loops,
     module Control.Monad.State,
@@ -15,6 +16,7 @@ module Pre (
     module Data.Foldable1,
     module Data.Function,
     module Data.Functor,
+    module Data.Functor.Compose,
     module Data.List,
     module Data.List.Extra,
     module Data.List.NonEmpty,
@@ -28,6 +30,7 @@ module Pre (
     module Data.Tuple.Extra,
     module Data.Void,
     module Data.Word,
+    module GHC.Generics,
     module Linear,
     module Safe,
     module Text.Megaparsec,
@@ -41,6 +44,7 @@ module Pre (
     adjacentPairs,
     sortPair,
     HList (..),
+    HListC (..),
     HListF (..),
     foldHListF,
     foldHListF0,
@@ -49,6 +53,7 @@ module Pre (
     (/\),
     (/\\),
     nil,
+    Constrained (..),
     Fanout (..),
     Length,
     TestTree (..),
@@ -76,7 +81,9 @@ import "base" Prelude as BasePrelude hiding (
  )
 
 import Control.Applicative
-import Control.Exception (SomeException)
+import Control.DeepSeq (NFData, deepseq)
+import Control.DeepSeq qualified as DeepSeq
+import Control.Exception (SomeException, evaluate)
 import Control.Monad
 import Control.Monad.Catch (MonadCatch, try)
 import Control.Monad.Loops
@@ -89,8 +96,9 @@ import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimu
 import Data.Foldable1
 import Data.Function
 import Data.Functor
+import Data.Functor.Compose (Compose (Compose), getCompose)
 import Data.Functor.Contravariant
-import Data.Kind (Type)
+import Data.Kind (Constraint, Type)
 import Data.List (List, sortOn, transpose)
 import Data.List.Extra (dropEnd, enumerate, firstJust, notNull, splitOn)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty, some1, tail, tails)
@@ -103,11 +111,13 @@ import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as T
+import Data.Time
 import Data.Traversable
 import Data.Tree
 import Data.Tuple.Extra ((&&&))
 import Data.Void
 import Data.Word
+import GHC.Generics (Generic)
 import GHC.TypeNats (KnownNat, Nat, type (+))
 import Linear (V2 (..))
 import Safe
@@ -115,11 +125,11 @@ import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
 
-data Puzzle = forall input outputs. (KnownNat (Length outputs)) => Puzzle
+data Puzzle = forall input outputs. (KnownNat (Length outputs), NFData input) => Puzzle
     { number :: Word
     , parser :: Bool -> Parsec Void Text input
     , parts :: PuzzleParts input outputs
-    , extraTests :: Bool -> FilePath -> [TestTree IO (input, HList outputs)]
+    , extraTests :: Bool -> FilePath -> [TestTree IO (input, HListC NFData outputs)]
     }
 
 digit :: (Token s ~ Char, Num b, MonadParsec e s f) => f b
@@ -147,13 +157,13 @@ adjacentPairs = \case
 sortPair :: (Ord a) => (a, a) -> (a, a)
 sortPair (a, b) = if a <= b then (a, b) else (b, a)
 
-type PuzzleParts input = HListF (Fanout ((->) input) (Op Text))
+type PuzzleParts input = HListF (Compose (Fanout ((->) input) (Op Text)) (Constrained NFData))
 infixr 9 /\\
-(/\\) :: (input -> output, output -> Text) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\\) (f, o) = HConsF $ Fanout (f, Op o)
+(/\\) :: (NFData output) => (input -> output, output -> Text) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
+(/\\) (f, o) = HConsF $ Compose $ Fanout (Constrained . f, Op $ o . (.unwrap))
 infixr 9 /\
-(/\) :: (Show output) => (input -> output) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\) f = HConsF $ Fanout (f, Op T.show)
+(/\) :: (Show output, NFData output) => (input -> output) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
+(/\) f = HConsF $ Compose $ Fanout (Constrained . f, Op $ T.show . (.unwrap))
 nil :: PuzzleParts input '[]
 nil = HNilF
 
@@ -163,6 +173,18 @@ data HList (as :: List Type) :: Type where
         a ->
         HList as ->
         HList (a ': as)
+
+data HListC (c :: Type -> Constraint) (as :: List Type) :: Type where
+    HNilC :: HListC c '[]
+    HConsC ::
+        (c a) =>
+        a ->
+        HListC c as ->
+        HListC c (a ': as)
+instance NFData (HListC NFData outputs) where
+    rnf = \case
+        HNilC -> ()
+        HConsC x xs -> deepseq x $ DeepSeq.rnf xs
 
 data HListF (f :: Type -> Type) (as :: List Type) :: Type where
     HNilF :: HListF f '[]
@@ -186,6 +208,9 @@ lookupHList f = \case
     HNilF -> absurd . separateZero
     HConsF x xs -> maybe (f x) (lookupHList f xs) . unshift
 
+data Constrained c a where
+    Constrained :: (c a) => {unwrap :: a} -> Constrained c a
+
 newtype Fanout f g a = Fanout (f a, g a)
 
 type family Length as :: Nat where
@@ -193,10 +218,10 @@ type family Length as :: Nat where
     Length (x ': xs) = Length xs + 1
 
 data TestTree m input where
-    TestTree :: TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input
+    TestTree :: (NFData output) => TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input
 
 data TestResult
-    = Pass TestName [TestResult]
+    = Pass TestName NominalDiffTime [TestResult]
     | Fail TestName SomeExceptionLegalShow
     deriving (Show)
 
@@ -213,13 +238,20 @@ instance Show SomeExceptionLegalShow where
 getTestTree :: TestTree m r -> Tree TestName
 getTestTree (TestTree name _ ts) = Node name $ map getTestTree ts
 
-runTests :: (MonadCatch m) => a -> TestTree m a -> m TestResult
-runTests x (TestTree name f ts) =
-    Control.Monad.Catch.try (f x) >>= \case
+runTests :: (MonadIO m, MonadCatch m) => a -> TestTree m a -> m TestResult
+runTests r0 (TestTree name f ts) =
+    Control.Monad.Catch.try (timed $ f r0) >>= \case
         Left e ->
             pure $ Fail name $ SomeExceptionLegalShow e
-        Right r ->
-            Pass name <$> for ts (runTests r)
+        Right (r, dt) ->
+            Pass name dt <$> for ts (runTests r)
+  where
+    timed x = do
+        t0 <- liftIO getCurrentTime
+        r <- x
+        rf <- liftIO $ evaluate $ DeepSeq.force r
+        t1 <- liftIO getCurrentTime
+        pure (rf, diffUTCTime t1 t0)
 
 assertEqual :: (Eq p, MonadFail f) => p -> p -> f ()
 assertEqual expected actual = assert "not equal" (expected == actual)

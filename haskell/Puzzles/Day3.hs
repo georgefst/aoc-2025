@@ -21,10 +21,10 @@ puzzle =
         }
 
 newtype Bank = Bank (NonEmpty Battery)
-    deriving newtype (Eq, Ord, Show)
+    deriving newtype (Eq, Ord, Show, NFData)
 
 newtype Battery = Battery Word8
-    deriving newtype (Eq, Ord, Show, Num, Enum, Real, Integral)
+    deriving newtype (Eq, Ord, Show, Num, Enum, Real, Integral, NFData)
 
 -- maximal n-digit subsequence
 -- returns `Nothing` if list isn't long enough (>= n)

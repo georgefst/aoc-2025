@@ -30,7 +30,7 @@ puzzle =
         }
 
 data Op = Add | Multiply
-    deriving (Eq, Ord, Show, Enum, Bounded)
+    deriving (Eq, Ord, Show, Enum, Bounded, Generic, NFData)
 apply :: Op -> Int -> Int -> Int
 apply = \case
     Add -> (+)

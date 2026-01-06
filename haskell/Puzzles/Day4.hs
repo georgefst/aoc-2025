@@ -6,6 +6,7 @@ import Data.Sequence qualified as Seq
 import Data.Stream.Infinite qualified as S
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
+import Control.DeepSeq (rnf)
 
 puzzle :: Puzzle
 puzzle =
@@ -31,7 +32,7 @@ puzzle =
                 []
             , TestTree
                 "frames"
-                ( \(_, (HCons _ (HCons (_, fmap snd -> frameStream) HNil))) ->
+                ( \(_, (HConsC _ (HConsC (_, fmap snd -> frameStream) HNilC))) ->
                     pure $ Seq.fromList $ takeUntil noneAccessible frameStream
                 )
                 let nFrames = if isRealData then 58 else 9
@@ -63,11 +64,12 @@ puzzle =
 
 newtype Grid a = Grid (Seq (Seq (V2 Int, a)))
     deriving (Functor, Show)
+    deriving newtype (NFData)
 
 data InTile
     = InEmpty
     | InRoll
-    deriving (Eq, Ord, Show, Enum, Bounded)
+    deriving (Eq, Ord, Show, Enum, Bounded, Generic, NFData)
 inToChar :: InTile -> Char
 inToChar = \case
     InEmpty -> '.'
@@ -77,7 +79,7 @@ data OutTile
     = OutEmpty
     | OutRoll
     | OutAccessible
-    deriving (Eq, Ord, Show, Enum, Bounded)
+    deriving (Eq, Ord, Show, Enum, Bounded, Generic, NFData)
 outToChar :: OutTile -> Char
 outToChar = \case
     OutEmpty -> inToChar InEmpty
@@ -132,3 +134,7 @@ takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
 
 unfoldMutual :: (a -> b) -> (b -> a) -> a -> Stream (a, b)
 unfoldMutual f g a = let b = f a in (a, b) :> unfoldMutual f g (g b)
+
+-- TODO this is a junk instance which sort-of works because we never truly care about forcing this
+instance NFData (Stream a) where
+    rnf a = ()
