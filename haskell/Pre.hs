@@ -54,6 +54,7 @@ module Pre (
     (/\\),
     nil,
     Constrained (..),
+    withConstrained,
     Fanout (..),
     Length,
     TestTree (..),
@@ -160,10 +161,10 @@ sortPair (a, b) = if a <= b then (a, b) else (b, a)
 type PuzzleParts input = HListF (Compose (Fanout ((->) input) (Op Text)) (Constrained NFData))
 infixr 9 /\\
 (/\\) :: (NFData output) => (input -> output, output -> Text) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\\) (f, o) = HConsF $ Compose $ Fanout (Constrained . f, Op $ o . (.unwrap))
+(/\\) (f, o) = HConsF $ Compose $ Fanout (Constrained . f, Op $ flip withConstrained o)
 infixr 9 /\
 (/\) :: (Show output, NFData output) => (input -> output) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\) f = HConsF $ Compose $ Fanout (Constrained . f, Op $ T.show . (.unwrap))
+(/\) f = HConsF $ Compose $ Fanout (Constrained . f, Op $ flip withConstrained T.show)
 nil :: PuzzleParts input '[]
 nil = HNilF
 
@@ -209,7 +210,9 @@ lookupHList f = \case
     HConsF x xs -> maybe (f x) (lookupHList f xs) . unshift
 
 data Constrained c a where
-    Constrained :: (c a) => {unwrap :: a} -> Constrained c a
+    Constrained :: (c a) => a -> Constrained c a
+withConstrained :: Constrained c a -> ((c a) => a -> b) -> b
+withConstrained (Constrained x) f = f x
 
 newtype Fanout f g a = Fanout (f a, g a)
 
