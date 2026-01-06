@@ -161,10 +161,10 @@ sortPair (a, b) = if a <= b then (a, b) else (b, a)
 type PuzzleParts input = HListF (Compose (Fanout ((->) input) (Op Text)) (Constrained NFData))
 infixr 9 /\\
 (/\\) :: (NFData output) => (input -> output, output -> Text) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\\) (f, o) = HConsF $ Compose $ Fanout (Constrained . f, Op $ flip withConstrained o)
+(/\\) (f, o) = HConsF $ Compose $ Fanout (Constrained . f, Op $ withConstrained o)
 infixr 9 /\
 (/\) :: (Show output, NFData output) => (input -> output) -> PuzzleParts input outputs -> PuzzleParts input (output : outputs)
-(/\) f = HConsF $ Compose $ Fanout (Constrained . f, Op $ flip withConstrained T.show)
+(/\) f = HConsF $ Compose $ Fanout (Constrained . f, Op $ withConstrained T.show)
 nil :: PuzzleParts input '[]
 nil = HNilF
 
@@ -211,8 +211,8 @@ lookupHList f = \case
 
 data Constrained c a where
     Constrained :: (c a) => a -> Constrained c a
-withConstrained :: Constrained c a -> ((c a) => a -> b) -> b
-withConstrained (Constrained x) f = f x
+withConstrained :: ((c a) => a -> b) -> Constrained c a -> b
+withConstrained f (Constrained x) = f x
 
 newtype Fanout f g a = Fanout (f a, g a)
 
