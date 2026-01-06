@@ -18,23 +18,26 @@ import Puzzles.Day9 qualified as Day9
 import Text.Pretty.Simple (pPrintForceColor)
 
 main :: IO ()
-main =
-    (pPrintForceColor =<<) $ runTests () $ test "tests" pure $ flip map enumerate \isRealData@(bool "examples" "real" -> t) ->
-        test (mkTestName t) pure $ flip
-            map
-            [ Day1.puzzle
-            , Day2.puzzle
-            , Day3.puzzle
-            , Day4.puzzle
-            , Day5.puzzle
-            , Day6.puzzle
-            , Day7.puzzle
-            , Day8.puzzle
-            , Day9.puzzle
-            , Day10.puzzle
-            ]
-            \Puzzle{number = show -> pt, parser, parts, extraTests} ->
-                testLazy
+main = do
+    pPrintForceColor $ getTestTree tests
+    pPrintForceColor =<< runTests () tests
+
+tests :: TestTree IO ()
+tests =
+    test "tests" pure $
+        enumerate <&> \isRealData@(bool "examples" "real" -> t) ->
+            test (mkTestName t) pure $
+                [ Day1.puzzle
+                , Day2.puzzle
+                , Day3.puzzle
+                , Day4.puzzle
+                , Day5.puzzle
+                , Day6.puzzle
+                , Day7.puzzle
+                , Day8.puzzle
+                , Day9.puzzle
+                , Day10.puzzle
+                ] <&> \Puzzle{number = show -> pt, parser, parts, extraTests} -> testLazy
                     (mkTestName pt)
                     ( \() -> do
                         let fp = "../inputs/" <> t <> "/" <> pt
