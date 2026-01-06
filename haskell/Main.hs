@@ -37,26 +37,28 @@ tests =
                 , Day8.puzzle
                 , Day9.puzzle
                 , Day10.puzzle
-                ] <&> \Puzzle{number = show -> pt, parser, parts, extraTests} -> testLazy
-                    (mkTestName pt)
-                    ( \() -> do
-                        let fp = "../inputs/" <> t <> "/" <> pt
-                        input <-
-                            either (fail . ("parse failure: " <>) . errorBundlePretty) pure
-                                . runParser (parser isRealData <* eof) fp
-                                =<< T.readFile fp
-                        let (rs, os) =
-                                (lookupHList fst &&& foldHListF (HCons . snd) HNil) $
-                                    mapHListF (\((Fanout (f, Op o))) -> (o &&& id) $ f input) parts
-                         in pure (input, rs, os)
-                    )
-                    $ ( finites <&> \(n@(show . succ @Int . fromIntegral -> nt)) ->
-                            test
-                                (mkTestName nt)
-                                (\(_, rs, _) -> golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ rs n <> "\n")
-                                []
-                      )
-                        <> let ts = extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
-                            in if null ts
-                                then []
-                                else [testLazy "extra" (\(input, _, os) -> pure (input, os)) ts]
+                ]
+                    <&> \Puzzle{number = show -> pt, parser, parts, extraTests} ->
+                        testLazy
+                            (mkTestName pt)
+                            ( \() -> do
+                                let fp = "../inputs/" <> t <> "/" <> pt
+                                input <-
+                                    either (fail . ("parse failure: " <>) . errorBundlePretty) pure
+                                        . runParser (parser isRealData <* eof) fp
+                                        =<< T.readFile fp
+                                let (rs, os) =
+                                        (lookupHList fst &&& foldHListF (HCons . snd) HNil) $
+                                            mapHListF (\((Fanout (f, Op o))) -> (o &&& id) $ f input) parts
+                                 in pure (input, rs, os)
+                            )
+                            $ ( finites <&> \(n@(show . succ @Int . fromIntegral -> nt)) ->
+                                    test
+                                        (mkTestName nt)
+                                        (\(_, rs, _) -> golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ rs n <> "\n")
+                                        []
+                              )
+                                <> let ts = extraTests isRealData ("../outputs/" <> t <> "/" <> pt <> "/extra/")
+                                    in if null ts
+                                        then []
+                                        else [testLazy "extra" (\(input, _, os) -> pure (input, os)) ts]
