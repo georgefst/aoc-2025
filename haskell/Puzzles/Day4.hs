@@ -25,7 +25,7 @@ puzzle =
             [ test
                 "round trip"
                 ( \(input, _) -> do
-                    t <- T.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"
+                    t <- liftIO $ T.readFile if isRealData then "../inputs/real/4" else "../inputs/examples/4"
                     assertEqual t $ drawGrid (mkGrid input <&> \case InEmpty -> OutEmpty; InRoll -> OutRoll)
                 )
                 []
@@ -36,7 +36,7 @@ puzzle =
                 )
                 let nFrames = if isRealData then 58 else 9
                     lookupFrame n frames =
-                        maybe (fail $ "frame list index not found: " <> show n) pure $
+                        maybe (assertFailure $ "frame list index not found: " <> T.show n) pure $
                             Seq.lookup n frames
                  in map
                         ( \n ->

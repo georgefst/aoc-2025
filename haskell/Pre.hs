@@ -64,6 +64,7 @@ module Pre (
     Fanout (..),
     Length,
     TestTree,
+    Test,
     test,
     testLazy,
     TestName,
@@ -73,6 +74,7 @@ module Pre (
     runTests,
     assertEqual,
     assert,
+    assertFailure,
     golden,
 )
 where
@@ -95,7 +97,8 @@ import Control.DeepSeq (NFData, deepseq)
 import Control.DeepSeq qualified as DeepSeq
 import Control.Exception (SomeException, evaluate)
 import Control.Monad
-import Control.Monad.Catch (MonadCatch, try)
+import Control.Monad.Catch (MonadCatch, MonadThrow, try)
+import Control.Monad.Except
 import Control.Monad.Loops
 import Control.Monad.State
 import Data.Bifunctor
@@ -248,22 +251,39 @@ data TestTree m input where
     TestTree :: TestName -> TestCase m input output -> [TestTree m output] -> TestTree m input
 
 data TestCase m input output where
-    TestCase :: (NFData output) => (input -> m output) -> TestCase m input output
-    TestCaseLazy :: (input -> m output) -> TestCase m input output
+    TestCase :: (NFData output) => (input -> Test m output) -> TestCase m input output
+    TestCaseLazy :: (input -> Test m output) -> TestCase m input output
+
+newtype Test m a = Test (ExceptT TestFailure m a)
+    deriving newtype
+        ( Functor
+        , Applicative
+        , Monad
+        , MonadIO
+        , MonadThrow
+        , MonadCatch
+        , MonadError TestFailure
+        )
 
 -- | See `testLazy` for avoiding the `NFData` constraint.
-test :: (NFData output) => TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input
+test :: (NFData output) => TestName -> (input -> Test m output) -> [TestTree m output] -> TestTree m input
 test n f = TestTree n $ TestCase f
 
 {- | This is `test` without the `NFData` constraint.
 It doesn't force the output before completion, which means that reported timings may be less accurate.
 -}
-testLazy :: TestName -> (input -> m output) -> [TestTree m output] -> TestTree m input
+testLazy :: TestName -> (input -> Test m output) -> [TestTree m output] -> TestTree m input
 testLazy n f = TestTree n $ TestCaseLazy f
 
 data TestResult
     = Pass TestName NominalDiffTime [TestResult]
-    | Fail TestName SomeExceptionLegalShow
+    | Fail TestName TestFailure
+    deriving (Show)
+
+data TestFailure
+    = ExceptionFailure SomeException
+    | AssertionFailure Text
+    | GoldenFailure {expected :: Text, actual :: Text}
     deriving (Show)
 
 newtype TestName = TestName String
@@ -271,10 +291,6 @@ newtype TestName = TestName String
 
 mkTestName :: String -> TestName
 mkTestName = TestName
-
-newtype SomeExceptionLegalShow = SomeExceptionLegalShow SomeException
-instance Show SomeExceptionLegalShow where
-    show (SomeExceptionLegalShow e) = show $ show e
 
 getTestTree :: TestTree m r -> Tree TestName
 getTestTree (TestTree name _ ts) = Node name $ map getTestTree ts
@@ -288,13 +304,16 @@ displayTestResultsConsole terminalWidth testResult =
             Pass (TestName name) dt children ->
                 TL.fromStrict (header Green '✓' name indent (Just dt))
                     <> TL.concat (map (displayResult (indent + 1)) children)
-            Fail (TestName name) (SomeExceptionLegalShow e) ->
-                TL.fromStrict
-                    ( header Red '✗' name indent Nothing
+            Fail (TestName name) e ->
+                TL.fromStrict $
+                    header Red '✗' name indent Nothing
                         <> setColour Vivid Red
-                    )
-                    <> TL.show e
-                    <> "\n"
+                        <> case e of
+                            ExceptionFailure ex -> T.show ex
+                            AssertionFailure t -> T.stripEnd t
+                            GoldenFailure{expected, actual} ->
+                                "Expected:\n" <> T.stripEnd expected <> "\nActual:\n" <> T.stripEnd actual
+                        <> "\n"
     header colour icon name indent time =
         setColour Vivid colour
             <> T.singleton icon
@@ -347,11 +366,14 @@ displayTestResultsConsole terminalWidth testResult =
 
 runTests :: (MonadIO m, MonadCatch m) => a -> TestTree m a -> m TestResult
 runTests r0 (TestTree name tc ts) =
-    Control.Monad.Catch.try (runTest tc) >>= \case
-        Left e ->
-            pure $ Fail name $ SomeExceptionLegalShow e
-        Right (r, dt) ->
-            Pass name dt <$> for ts (runTests r)
+    let Test t = Control.Monad.Catch.try $ runTest tc
+     in runExceptT t >>= \case
+            Left e ->
+                pure $ Fail name e
+            Right (Left e) ->
+                pure $ Fail name $ ExceptionFailure e
+            Right (Right (r, dt)) ->
+                Pass name dt <$> for ts (runTests r)
   where
     runTest = \case
         TestCase f -> timed (liftIO . evaluate . DeepSeq.force) $ f r0
@@ -363,11 +385,13 @@ runTests r0 (TestTree name tc ts) =
         t1 <- liftIO getCurrentTime
         pure (rf, diffUTCTime t1 t0)
 
-assertEqual :: (Eq p, MonadFail m) => p -> p -> m ()
+assertEqual :: (Eq p, Monad m) => p -> p -> Test m ()
 assertEqual expected actual = assert "not equal" (expected == actual)
-assert :: (MonadFail m) => String -> Bool -> m ()
-assert s b = if b then pure () else fail s
-golden :: FilePath -> Text -> IO ()
-golden p x = do
-    expected <- T.readFile p
-    if expected == x then pure () else fail "golden test failure"
+assert :: (Monad m) => Text -> Bool -> Test m ()
+assert s b = if b then pure () else assertFailure s
+assertFailure :: (Monad m) => Text -> Test m a
+assertFailure = throwError . AssertionFailure
+golden :: (MonadIO m, MonadFail m) => FilePath -> Text -> Test m ()
+golden p actual = do
+    expected <- liftIO $ T.readFile p
+    if expected == actual then pure () else throwError $ GoldenFailure{expected, actual}

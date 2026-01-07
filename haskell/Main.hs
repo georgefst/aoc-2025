@@ -4,6 +4,7 @@ import Pre
 
 import Data.Finite
 import Data.Functor.Contravariant
+import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.Text.Lazy.IO qualified as TL
 import Puzzles.Day1 qualified as Day1
@@ -47,9 +48,9 @@ tests =
                             ( \() -> do
                                 let fp = "../inputs/" <> t <> "/" <> pt
                                 input <-
-                                    either (fail . ("parse failure: " <>) . errorBundlePretty) pure
+                                    either (assertFailure . T.pack . ("parse failure: " <>) . errorBundlePretty) pure
                                         . runParser (parser isRealData <* eof) fp
-                                        =<< T.readFile fp
+                                        =<< liftIO (T.readFile fp)
                                 let (rs, os) =
                                         (lookupHList fst &&& foldHListF (HCons . snd) HNil) $
                                             mapHListF (\((Fanout (f, Op o))) -> (o &&& id) $ f input) parts
