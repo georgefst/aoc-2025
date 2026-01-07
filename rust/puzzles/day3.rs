@@ -37,11 +37,25 @@ pub const PUZZLE: Puzzle<Vec<Vec<u8>>, 2> = Puzzle {
         },
         |input| {
             input
-                .iter()
+                .into_iter()
                 .map(|bank| {
-                    digits_to_int(&max_batteries(12, &bank).expect("battery list too short"))
+                    let mut bank = bank.into_iter().rev();
+                    let mut init: Vec<_> = bank.by_ref().take(12).collect();
+                    for mut e in bank {
+                        for i in (0..12).rev() {
+                            if e >= init[i] {
+                                (init[i], e) = (e, init[i])
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    init.into_iter()
+                        .rev()
+                        .fold(0, |acc: u64, x| acc * 10 + *x as u64)
                 })
-                .sum::<usize>()
+                .reduce(|acc, x| acc + x)
+                .unwrap()
                 .to_string()
         },
     ],
