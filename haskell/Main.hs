@@ -22,7 +22,7 @@ import System.Console.Terminal.Size qualified as Terminal.Size
 main :: IO ()
 main = do
     -- terminalWidth <- Terminal.Size.width <<$>> Terminal.Size.size -- TODO this doesn't work in GHCID or GHCIWatch...
-    terminalWidth <- pure $ Just 60
+    terminalWidth <- pure $ Just 62
     putStrLn $ drawTree $ show <$> getTestTree tests
     TL.putStrLn . displayTestResultsConsole terminalWidth =<< runTests () tests
 
