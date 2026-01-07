@@ -49,6 +49,7 @@ module Pre (
     allUnorderedPairs,
     adjacentPairs,
     sortPair,
+    drawTree,
     HList (..),
     HListC (..),
     HListF (..),
@@ -127,7 +128,7 @@ import Data.Text.IO qualified as T
 import Data.Text.Lazy qualified as TL
 import Data.Time
 import Data.Traversable
-import Data.Tree
+import Data.Tree hiding (drawTree)
 import Data.Tuple.Extra ((&&&))
 import Data.Void
 import Data.Word
@@ -183,6 +184,19 @@ adjacentPairs = \case
 
 sortPair :: (Ord a) => (a, a) -> (a, a)
 sortPair (a, b) = if a <= b then (a, b) else (b, a)
+
+-- | This is `Data.Tree.drawTree` with the ASCII characters replaced with Unicode box drawing characters.
+drawTree :: Tree String -> String
+drawTree = unlines . draw
+  where
+    draw (Node x ts0) = lines x ++ drawSubTrees ts0
+      where
+        drawSubTrees [] = []
+        drawSubTrees [t] =
+            "│" : shift_ "└─ " "   " (draw t)
+        drawSubTrees (t : ts) =
+            "│" : shift_ "├─ " "│  " (draw t) ++ drawSubTrees ts
+        shift_ first_ other = zipWith (++) (first_ : repeat other)
 
 type PuzzleParts input = HListF ((Fanout ((->) input) (Op Text)))
 infixr 9 /\\
