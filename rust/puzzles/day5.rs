@@ -1,4 +1,5 @@
 use crate::puzzle::Puzzle;
+use itertools::Itertools;
 use nom::{
     Parser,
     character::complete::{char, newline, usize},
@@ -35,10 +36,8 @@ pub const PUZZLE: Puzzle<(Vec<Range>, Vec<usize>), 2> = Puzzle {
                 .to_string()
         },
         |(ranges, _)| {
-            let mut sorted_ranges = ranges.clone();
-            sorted_ranges.sort_by_key(|r| r.lower);
             let mut merged = Ranges::new();
-            for r in sorted_ranges {
+            for r in ranges.iter().cloned().sorted_by_key(|r| r.lower) {
                 merged.add(r);
             }
             merged.total_length().to_string()

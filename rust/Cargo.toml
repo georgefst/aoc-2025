@@ -8,4 +8,5 @@ path = "main.rs"
 name = "aoc"
 
 [dependencies]
+itertools = "0.14"
 nom = "8.0.0"
