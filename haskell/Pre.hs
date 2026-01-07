@@ -318,12 +318,11 @@ displayTestResultsConsole terminalWidth testResult =
                 TL.fromStrict $
                     header Red '✗' name indent Nothing
                         <> setColour Vivid Red
-                        <> case e of
+                        <> paddedAllLines (T.replicate (indent * 2) " ") case e of
                             ExceptionFailure ex -> T.show ex
                             AssertionFailure t -> T.stripEnd t
                             GoldenFailure{expected, actual} ->
                                 "Expected:\n" <> T.stripEnd expected <> "\nActual:\n" <> T.stripEnd actual
-                        <> "\n"
     header colour icon name indent time =
         setColour Vivid colour
             <> T.singleton icon
@@ -346,6 +345,7 @@ displayTestResultsConsole terminalWidth testResult =
                 )
                 time
             <> "\n"
+    paddedAllLines p = T.unlines . map (p <>) . T.lines
     showTime (nominalDiffTimeToSeconds -> MkFixed duration) =
         -- SI prefixes, and always exactly 2 decimal places, or 3 if there's no prefix
         T.show res
