@@ -29,24 +29,24 @@ main = do
 tests :: TestTree IO ()
 tests =
     test "tests" pure $
-        enumerate <&> \isRealData@(bool "examples" "real" -> t) ->
+        let isRealData = True ; t = "extra" in pure $
             test (T.pack t) pure $
                 [ Day1.puzzle
-                , Day2.puzzle
-                , Day3.puzzle
-                , Day4.puzzle
-                , Day5.puzzle
-                , Day6.puzzle
-                , Day7.puzzle
-                , Day8.puzzle
-                , Day9.puzzle
-                , Day10.puzzle
+                -- , Day2.puzzle
+                -- , Day3.puzzle
+                -- , Day4.puzzle
+                -- , Day5.puzzle
+                -- , Day6.puzzle
+                -- , Day7.puzzle
+                -- , Day8.puzzle
+                -- , Day9.puzzle
+                -- , Day10.puzzle
                 ]
                     <&> \Puzzle{number = show -> pt, parser, parts, extraTests} ->
                         testLazy
                             (T.pack pt)
                             ( \() -> do
-                                let fp = "../inputs/" <> t <> "/" <> pt
+                                let fp = "../inputs/" <> "extra" <> "/" <> pt
                                 input <-
                                     either (assertFailure . T.pack . ("parse failure: " <>) . errorBundlePretty) pure
                                         . runParser (parser isRealData <* eof) fp

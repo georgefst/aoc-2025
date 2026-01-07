@@ -1,6 +1,7 @@
 module Puzzles.Day1 (puzzle) where
 
 import Pre
+import Debug.Pretty.Simple
 
 puzzle :: Puzzle
 puzzle =
@@ -22,7 +23,7 @@ puzzle =
                             p <- get
                             c <- state $ step i d
                             p' <- get
-                            pure case d of
+                            pure $ applyWhen (p == 0 && p' == 0) (pTraceShow "hmmmm") case d of
                                 R -> abs c
                                 L ->
                                     if
