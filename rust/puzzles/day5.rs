@@ -58,11 +58,8 @@ impl Range {
     fn contains(&self, n: usize) -> bool {
         n >= self.lower && n <= self.upper
     }
-    fn extend(&self, upper: usize) -> Range {
-        Range {
-            lower: self.lower,
-            upper: self.upper.max(upper),
-        }
+    fn extend(&mut self, upper: usize) {
+        self.upper = upper
     }
 }
 
@@ -72,16 +69,13 @@ impl Ranges {
         Ranges(Vec::new())
     }
     fn add(&mut self, new: Range) {
-        if self.0.is_empty() {
-            self.0.push(new);
-        } else {
-            let first = &self.0[0];
-            if first.contains(new.lower) {
-                self.0[0] = first.extend(new.upper);
-            } else {
-                self.0.insert(0, new);
+        if let Some(last) = self.0.last_mut() {
+            if last.contains(new.lower) {
+                last.extend(last.upper.max(new.upper));
+                return;
             }
         }
+        self.0.push(new);
     }
     fn total_length(&self) -> usize {
         self.0.iter().map(|r| r.length()).sum()
