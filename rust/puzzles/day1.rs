@@ -2,8 +2,8 @@ use crate::puzzle::Puzzle;
 use nom::{
     Parser,
     branch::alt,
-    character::complete::{char, digit1, newline},
-    combinator::{eof, map_res, value},
+    character::complete::{char, i32, newline},
+    combinator::{eof, value},
     error::Error,
     multi::separated_list1,
     sequence::{pair, terminated},
@@ -12,7 +12,7 @@ use nom::{
 pub const PUZZLE: Puzzle<Vec<(Direction, i32)>, 2> = Puzzle {
     number: 1,
     parser: |input| {
-        terminated(
+        terminated::<_, _, Error<&str>, _, _>(
             terminated(
                 separated_list1(
                     newline,
@@ -21,7 +21,7 @@ pub const PUZZLE: Puzzle<Vec<(Direction, i32)>, 2> = Puzzle {
                             value(Direction::L, char('L')),
                             value(Direction::R, char('R')),
                         )),
-                        parse_int(),
+                        i32,
                     ),
                 ),
                 newline,
@@ -82,8 +82,4 @@ fn step(i: i32, d: Direction, p: i32) -> (i32, i32) {
         Direction::R => p + i,
     };
     (p1.div_euclid(100), p1.rem_euclid(100))
-}
-
-fn parse_int<'a>() -> impl Parser<&'a str, Output = i32, Error = Error<&'a str>> {
-    map_res(digit1, |s: &str| s.parse::<i32>())
 }
