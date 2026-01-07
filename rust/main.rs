@@ -5,10 +5,17 @@ use puzzles::day1;
 use puzzles::day2;
 use puzzles::day3;
 use puzzles::day4;
+use puzzles::day5;
 use std::fs;
 use std::time::{Duration, Instant};
 
-const PUZZLES: [&dyn SomePuzzle; 4] = [&day1::PUZZLE, &day2::PUZZLE, &day3::PUZZLE, &day4::PUZZLE];
+const PUZZLES: [&dyn SomePuzzle; 5] = [
+    &day1::PUZZLE,
+    &day2::PUZZLE,
+    &day3::PUZZLE,
+    &day4::PUZZLE,
+    &day5::PUZZLE,
+];
 
 fn main() {
     [false, true].iter().for_each(|is_real_data| {
