@@ -36,11 +36,12 @@ pub const PUZZLE: Puzzle<(Vec<Range>, Vec<usize>), 2> = Puzzle {
         },
         |(ranges, _)| {
             let mut sorted_ranges = ranges.clone();
-            sorted_ranges.sort_by(|a, b| b.lower.cmp(&a.lower));
-            let merged: Vec<Range> = sorted_ranges
-                .into_iter()
-                .rfold(Vec::new(), |acc, new| add_interval(new, acc));
-            merged.iter().map(|r| r.length()).sum::<usize>().to_string()
+            sorted_ranges.sort_by_key(|r| r.lower);
+            let mut merged = Ranges::new();
+            for r in sorted_ranges {
+                merged.add(r);
+            }
+            merged.total_length().to_string()
         },
     ],
 };
@@ -65,18 +66,24 @@ impl Range {
     }
 }
 
-fn add_interval(new: Range, mut ranges: Vec<Range>) -> Vec<Range> {
-    if ranges.is_empty() {
-        vec![new]
-    } else {
-        let first = &ranges[0];
-        if first.contains(new.lower) {
-            ranges[0] = first.extend(new.upper);
-            ranges
+struct Ranges(Vec<Range>);
+impl Ranges {
+    fn new() -> Self {
+        Ranges(Vec::new())
+    }
+    fn add(&mut self, new: Range) {
+        if self.0.is_empty() {
+            self.0.push(new);
         } else {
-            let mut result = vec![new];
-            result.append(&mut ranges);
-            result
+            let first = &self.0[0];
+            if first.contains(new.lower) {
+                self.0[0] = first.extend(new.upper);
+            } else {
+                self.0.insert(0, new);
+            }
         }
+    }
+    fn total_length(&self) -> usize {
+        self.0.iter().map(|r| r.length()).sum()
     }
 }
