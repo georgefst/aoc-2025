@@ -286,10 +286,10 @@ data TestFailure
     | GoldenFailure {expected :: Text, actual :: Text}
     deriving (Show)
 
-newtype TestName = TestName String
+newtype TestName = TestName Text
     deriving newtype (IsString, Show)
 
-mkTestName :: String -> TestName
+mkTestName :: Text -> TestName
 mkTestName = TestName
 
 getTestTree :: TestTree m r -> Tree TestName
@@ -319,7 +319,7 @@ displayTestResultsConsole terminalWidth testResult =
             <> T.singleton icon
             <> " "
             <> setColour Dull White
-            <> T.pack name
+            <> name
             <> maybe
                 mempty
                 ( \_t@(showTime -> tt) ->
@@ -327,7 +327,7 @@ displayTestResultsConsole terminalWidth testResult =
                         ( fromIntegral $
                             maybe
                                 3
-                                (\n -> n - (2 * indent + length name + T.length tt + 2))
+                                (\n -> n - (2 * indent + T.length name + T.length tt + 2))
                                 terminalWidth
                         )
                         " "
