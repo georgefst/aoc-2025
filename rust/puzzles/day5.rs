@@ -40,7 +40,7 @@ pub const PUZZLE: Puzzle<(Vec<Range>, Vec<usize>), 2> = Puzzle {
             for r in ranges.iter().cloned().sorted_by_key(|r| r.lower) {
                 merged.add(r);
             }
-            merged.total_length().to_string()
+            merged.length().to_string()
         },
     ],
 };
@@ -76,7 +76,7 @@ impl Ranges {
         }
         self.0.push(new);
     }
-    fn total_length(&self) -> usize {
+    fn length(&self) -> usize {
         self.0.iter().map(|r| r.length()).sum()
     }
 }
