@@ -41,7 +41,7 @@ puzzle =
                  in map
                         ( \n ->
                             test
-                                (mkTestName $ T.show n)
+                                (T.show n)
                                 ( \frames -> do
                                     g <- lookupFrame n frames
                                     golden (path <> "frames/" <> show n) $ drawGrid g

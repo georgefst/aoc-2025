@@ -30,7 +30,7 @@ tests :: TestTree IO ()
 tests =
     test "tests" pure $
         enumerate <&> \isRealData@(bool "examples" "real" -> t) ->
-            test (mkTestName $ T.pack t) pure $
+            test (T.pack t) pure $
                 [ Day1.puzzle
                 , Day2.puzzle
                 , Day3.puzzle
@@ -44,7 +44,7 @@ tests =
                 ]
                     <&> \Puzzle{number = show -> pt, parser, parts, extraTests} ->
                         testLazy
-                            (mkTestName $ T.pack pt)
+                            (T.pack pt)
                             ( \() -> do
                                 let fp = "../inputs/" <> t <> "/" <> pt
                                 input <-
@@ -58,7 +58,7 @@ tests =
                             )
                             $ ( finites <&> \(n@(show . succ @Int . fromIntegral -> nt)) ->
                                     test
-                                        (mkTestName $ T.pack nt)
+                                        (T.pack nt)
                                         (\(_, rs, _) -> golden ("../outputs/" <> t <> "/" <> pt <> "/" <> nt) $ rs n <> "\n")
                                         []
                               )

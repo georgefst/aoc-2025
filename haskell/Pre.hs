@@ -68,7 +68,6 @@ module Pre (
     test,
     testLazy,
     TestName,
-    mkTestName,
     getTestTree,
     displayTestResultsConsole,
     runTests,
@@ -266,14 +265,14 @@ newtype Test m a = Test (ExceptT TestFailure m a)
         )
 
 -- | See `testLazy` for avoiding the `NFData` constraint.
-test :: (NFData output) => TestName -> (input -> Test m output) -> [TestTree m output] -> TestTree m input
-test n f = TestTree n $ TestCase f
+test :: (NFData output) => Text -> (input -> Test m output) -> [TestTree m output] -> TestTree m input
+test n f = TestTree (TestName n) $ TestCase f
 
 {- | This is `test` without the `NFData` constraint.
 It doesn't force the output before completion, which means that reported timings may be less accurate.
 -}
-testLazy :: TestName -> (input -> Test m output) -> [TestTree m output] -> TestTree m input
-testLazy n f = TestTree n $ TestCaseLazy f
+testLazy :: Text -> (input -> Test m output) -> [TestTree m output] -> TestTree m input
+testLazy n f = TestTree (TestName n) $ TestCaseLazy f
 
 data TestResult
     = Pass TestName NominalDiffTime [TestResult]
@@ -288,9 +287,6 @@ data TestFailure
 
 newtype TestName = TestName Text
     deriving newtype (IsString, Show)
-
-mkTestName :: Text -> TestName
-mkTestName = TestName
 
 getTestTree :: TestTree m r -> Tree TestName
 getTestTree (TestTree name _ ts) = Node name $ map getTestTree ts
