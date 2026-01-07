@@ -341,7 +341,7 @@ displayTestResultsConsole terminalWidth testResult =
                                 terminalWidth
                         )
                         " "
-                        <> setColour Dull Black
+                        <> setColour Dull Blue
                         <> tt
                 )
                 time
