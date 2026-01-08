@@ -184,8 +184,9 @@ adjacentPairs = \case
 sortPair :: (Ord a) => (a, a) -> (a, a)
 sortPair (a, b) = if a <= b then (a, b) else (b, a)
 
--- | This is `Data.Tree.drawTree` with the ASCII characters replaced with Unicode box drawing characters,
--- and using `Text` instead of `String`.
+{- | This is `Data.Tree.drawTree` with the ASCII characters replaced with Unicode box drawing characters,
+and using `Text` instead of `String`.
+-}
 drawTree :: Tree Text -> Text
 drawTree = T.unlines . draw
   where
