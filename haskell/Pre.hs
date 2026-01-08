@@ -71,6 +71,7 @@ module Pre (
     TestName,
     getTestTree,
     displayTestResultsConsole,
+    TestRunnerOpts (..),
     runTests,
     assertEqual,
     assert,
@@ -99,8 +100,10 @@ import Control.Exception (SomeException, evaluate)
 import Control.Monad
 import Control.Monad.Catch (MonadCatch, MonadThrow, try)
 import Control.Monad.Except
-import Control.Monad.Loops
+import Control.Monad.Loops hiding (firstM)
+import Control.Monad.Reader
 import Control.Monad.State
+import Control.Monad.Writer
 import Data.Bifunctor
 import Data.Bool
 import Data.Char
@@ -128,7 +131,7 @@ import Data.Text.Lazy qualified as TL
 import Data.Time
 import Data.Traversable
 import Data.Tree hiding (drawTree)
-import Data.Tuple.Extra ((&&&))
+import Data.Tuple.Extra (firstM, (&&&))
 import Data.Void
 import Data.Word
 import GHC.Generics (Generic)
@@ -136,6 +139,8 @@ import GHC.TypeNats (KnownNat, Nat, type (+))
 import Linear (V2 (..))
 import Safe
 import System.Console.ANSI
+import System.Directory
+import System.FilePath
 import Text.Megaparsec hiding (Pos, State, Stream, many, some)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
@@ -268,7 +273,16 @@ data TestCase m input output where
     TestCase :: (NFData output) => (input -> Test m output) -> TestCase m input output
     TestCaseLazy :: (input -> Test m output) -> TestCase m input output
 
-newtype Test m a = Test (ExceptT TestFailure m a)
+newtype Test m a
+    = Test
+        ( ExceptT
+            TestFailure
+            ( WriterT
+                [TestLogItem]
+                (ReaderT TestRunnerOpts m)
+            )
+            a
+        )
     deriving newtype
         ( Functor
         , Applicative
@@ -277,6 +291,8 @@ newtype Test m a = Test (ExceptT TestFailure m a)
         , MonadThrow
         , MonadCatch
         , MonadError TestFailure
+        , MonadWriter [TestLogItem]
+        , MonadReader TestRunnerOpts
         )
 
 -- | See `testLazy` for avoiding the `NFData` constraint.
@@ -289,14 +305,19 @@ It doesn't force the output before completion, which means that reported timings
 testLazy :: Text -> (input -> Test m output) -> [TestTree m output] -> TestTree m input
 testLazy n f = TestTree (TestName n) $ TestCaseLazy f
 
-data TestResult
-    = Pass TestName NominalDiffTime [TestResult]
-    | Fail TestName TestFailure
-    deriving (Show)
+data TestResult = TestResult
+    { name :: TestName
+    , logs :: [TestLogItem]
+    , result :: Either TestFailure (NominalDiffTime, [TestResult])
+    }
+
+data TestLogItem
+    = LogRegeneratedGolden
 
 data TestFailure
     = ExceptionFailure SomeException
     | AssertionFailure Text
+    | GoldenMissing
     | GoldenFailure {expected :: Text, actual :: Text}
 
 newtype TestName = TestName Text
@@ -310,18 +331,31 @@ displayTestResultsConsole terminalWidth testResult =
   where
     displayResult indent =
         (TL.replicate (fromIntegral indent) "  " <>) . \case
-            Pass (TestName name) dt children ->
-                TL.fromStrict (header Green '✓' name indent (Just dt))
-                    <> TL.concat (map (displayResult (indent + 1)) children)
-            Fail (TestName name) e ->
-                TL.fromStrict $
-                    header Red '✗' name indent Nothing
-                        <> setColour Vivid Red
-                        <> paddedAllLines (T.replicate (indent * 2) " ") case e of
-                            ExceptionFailure ex -> T.show ex
-                            AssertionFailure t -> T.stripEnd t
-                            GoldenFailure{expected, actual} ->
-                                "Expected:\n" <> T.stripEnd expected <> "\nActual:\n" <> T.stripEnd actual
+            TestResult{name = TestName name, logs, result} ->
+                case result of
+                    Right (dt, children) ->
+                        TL.fromStrict (header Green '✓' name indent (Just dt) <> displayLogs)
+                            <> TL.concat (map (displayResult (indent + 1)) children)
+                    Left e ->
+                        TL.fromStrict $
+                            header Red '✗' name indent Nothing
+                                <> displayLogs
+                                <> setColour Vivid Red
+                                <> indentAllLines indent case e of
+                                    ExceptionFailure ex -> T.show ex
+                                    AssertionFailure t -> T.stripEnd t
+                                    GoldenMissing -> "Golden file missing"
+                                    GoldenFailure{expected, actual} ->
+                                        "Expected:\n" <> T.stripEnd expected <> "\nActual:\n" <> T.stripEnd actual
+              where
+                displayLogs =
+                    setColour Dull Magenta
+                        <> indentAllLines
+                            indent
+                            ( flip foldMap logs \case
+                                LogRegeneratedGolden -> "Created golden file"
+                            )
+                        <> setColour Dull Magenta
     header colour icon name indent time =
         setColour Vivid colour
             <> T.singleton icon
@@ -345,6 +379,7 @@ displayTestResultsConsole terminalWidth testResult =
                 time
             <> "\n"
     paddedAllLines p = T.unlines . map (p <>) . T.lines
+    indentAllLines indent = paddedAllLines $ T.replicate (indent * 2) " "
     showTime (nominalDiffTimeToSeconds -> MkFixed duration) =
         -- SI prefixes, and always exactly 2 decimal places, or 3 if there's no prefix
         T.show res
@@ -373,16 +408,21 @@ displayTestResultsConsole terminalWidth testResult =
     sgr = T.pack . setSGRCode
     setColour d c = sgr [SetColor Foreground d c]
 
-runTests :: (MonadIO m, MonadCatch m) => a -> TestTree m a -> m TestResult
-runTests r0 (TestTree name tc ts) =
+data TestRunnerOpts = TestRunnerOpts
+    { regenerateGoldenFiles :: Bool
+    }
+
+runTests :: (MonadIO m, MonadCatch m) => TestRunnerOpts -> a -> TestTree m a -> m TestResult
+runTests opts r0 (TestTree name tc ts) =
     let Test t = Control.Monad.Catch.try $ runTest tc
-     in runExceptT t >>= \case
-            Left e ->
-                pure $ Fail name e
-            Right (Left e) ->
-                pure $ Fail name $ ExceptionFailure e
-            Right (Right (r, dt)) ->
-                Pass name dt <$> for ts (runTests r)
+     in runReaderT (runWriterT (runExceptT t)) opts
+            >>= fmap (\(result, logs) -> TestResult{name, logs, result}) . firstM \case
+                Left e ->
+                    pure $ Left e
+                Right (Left e) ->
+                    pure $ Left $ ExceptionFailure e
+                Right (Right (r, dt)) ->
+                    Right . (dt,) <$> for ts (runTests opts r)
   where
     runTest = \case
         TestCase f -> timed (liftIO . evaluate . DeepSeq.force) $ f r0
@@ -401,6 +441,21 @@ assert s b = if b then pure () else assertFailure s
 assertFailure :: (Monad m) => Text -> Test m a
 assertFailure = throwError . AssertionFailure
 golden :: (MonadIO m, MonadFail m) => FilePath -> Text -> Test m ()
-golden p actual = do
-    expected <- liftIO $ T.readFile p
-    if expected == actual then pure () else throwError $ GoldenFailure{expected, actual}
+golden file actual = do
+    TestRunnerOpts{..} <- ask
+    exists <- liftIO $ doesFileExist file
+    if exists
+        then do
+            expected <- liftIO $ T.readFile file
+            if expected == actual then pure () else throwError $ GoldenFailure{expected, actual}
+        else do
+            if regenerateGoldenFiles
+                then
+                    let parents = dropWhile null $ scanl (</>) "" $ splitDirectories $ takeDirectory file
+                     in tell [LogRegeneratedGolden] >> liftIO do
+                            for_ parents \dir -> do
+                                parentExists <- liftIO $ doesDirectoryExist dir
+                                when (not parentExists) $ createDirectory dir
+                            T.writeFile file actual
+                else
+                    throwError GoldenMissing
