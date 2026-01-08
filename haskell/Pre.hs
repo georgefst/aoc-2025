@@ -298,7 +298,6 @@ data TestFailure
     = ExceptionFailure SomeException
     | AssertionFailure Text
     | GoldenFailure {expected :: Text, actual :: Text}
-    deriving (Show)
 
 newtype TestName = TestName Text
 
