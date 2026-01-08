@@ -38,10 +38,21 @@ pub const PUZZLE: Puzzle<Vec<Vec<u8>>, 2> = Puzzle {
         |input| {
             input
                 .iter()
-                .map(|bank| {
-                    digits_to_int(&max_batteries(12, &bank).expect("battery list too short"))
+                .fold(0, |t, l| {
+                    t + (0..12)
+                        .rev()
+                        .fold((0, 0), |(i, b), p| {
+                            l.iter()
+                                .enumerate()
+                                .map(|(i, d)| (i + 1, b + (*d as u64) * 10u64.pow(p)))
+                                .skip(i)
+                                .rev()
+                                .skip(p as _)
+                                .max_by_key(|&(_, d)| d)
+                                .unwrap()
+                        })
+                        .1
                 })
-                .sum::<usize>()
                 .to_string()
         },
     ],

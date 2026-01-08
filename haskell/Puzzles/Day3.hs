@@ -3,18 +3,35 @@ module Puzzles.Day3 (puzzle) where
 import Pre
 
 import Data.List.NonEmpty qualified as NE
+import Data.Monoid
 
 puzzle :: Puzzle
 puzzle =
     Puzzle
         { number = 3
-        , parser = const $ (Bank <$> some1 digit) `sepEndBy` newline
+        , parser = const $ some (digit @_ @Int) `sepEndBy` newline
         , parts =
-            ( sum
-                . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 2)
-            )
-                /\ ( sum
-                        . map (digitsToInt . fromMaybe (error "battery list too short") . maxBatteries 12)
+            const ()
+                /\ ( flip foldl 0
+                        . flip
+                        $ (+)
+                            . snd
+                            . flip (flip foldl $ join bimap getSum mempty) [11, 10 .. 0]
+                            . uncurry
+                            . flip
+                                ((.) . (.) . (.))
+                                ( \i b p ->
+                                    maximumBy (comparing snd)
+                                        . fromMaybe undefined
+                                        . nonEmpty
+                                        . drop p
+                                        -- hmm... can we operate on the end instead? or just use `Seq` or `DList`
+                                        . reverse
+                                        . drop i
+                                        . map (bimap (+ 1) ((+ b) . (* 10 ^ p)))
+                                        . zip [0 ..]
+                                )
+                            . flip ($)
                    )
                 /\ nil
         , extraTests = mempty
