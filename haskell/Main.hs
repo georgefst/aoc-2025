@@ -23,7 +23,7 @@ main :: IO ()
 main = do
     -- terminalWidth <- Terminal.Size.width <<$>> Terminal.Size.size -- TODO this doesn't work in GHCID or GHCIWatch...
     terminalWidth <- pure $ Just 62
-    putStrLn $ drawTree $ show <$> getTestTree tests
+    putStrLn $ drawTree $ T.unpack <$> getTestTree tests
     TL.putStrLn . displayTestResultsConsole terminalWidth =<< runTests () tests
 
 tests :: TestTree IO ()
