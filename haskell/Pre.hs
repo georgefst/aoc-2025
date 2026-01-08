@@ -120,7 +120,6 @@ import Data.Maybe
 import Data.Ord
 import Data.Sequence (Seq)
 import Data.Stream.Infinite (Stream ((:>)))
-import Data.String (IsString)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
@@ -300,10 +299,9 @@ data TestFailure
     deriving (Show)
 
 newtype TestName = TestName Text
-    deriving newtype (IsString, Show)
 
-getTestTree :: TestTree m r -> Tree TestName
-getTestTree (TestTree name _ ts) = Node name $ map getTestTree ts
+getTestTree :: TestTree m r -> Tree Text
+getTestTree (TestTree (TestName name) _ ts) = Node name $ map getTestTree ts
 
 displayTestResultsConsole :: Maybe Int -> TestResult -> TL.Text
 displayTestResultsConsole terminalWidth testResult =
