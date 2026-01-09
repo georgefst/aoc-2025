@@ -14,13 +14,12 @@ puzzle =
         , parts =
             ( sum
                 . uncurry (zipWith applyToList)
-                . second (transpose . map (map (digitsToInt @Int . catMaybes) . filter notNull . splitOn [Nothing]))
+                . second (transpose . map (map (digitsToInt @Int) . filter notNull . groupJusts))
             )
                 /\ ( sum
                         . uncurry (zipWith applyToList)
                         . second
-                            ( map catMaybes
-                                . splitOn [Nothing]
+                            ( groupJusts
                                 . map (\l -> if all isNothing l then Nothing else Just $ digitsToInt @Int $ catMaybes l)
                                 . transpose
                             )
@@ -31,13 +30,16 @@ puzzle =
 
 data Op = Add | Multiply
     deriving (Eq, Ord, Show, Enum, Bounded, Generic, NFData)
-apply :: Op -> Int -> Int -> Int
+apply :: (Num a) => Op -> a -> a -> a
 apply = \case
     Add -> (+)
     Multiply -> (*)
-unit :: Op -> Int
+unit :: (Num a) => Op -> a
 unit = \case
     Add -> 0
     Multiply -> 1
-applyToList :: Op -> [Int] -> Int
+applyToList :: (Num a) => Op -> [a] -> a
 applyToList op = foldl' (apply op) (unit op)
+
+groupJusts :: (Eq a) => [Maybe a] -> [[a]]
+groupJusts = map catMaybes . splitOn [Nothing]
