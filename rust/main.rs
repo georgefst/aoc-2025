@@ -9,12 +9,13 @@ use puzzles::day5;
 use std::fs;
 use std::time::{Duration, Instant};
 
-const PUZZLES: [&dyn SomePuzzle; 5] = [
+const PUZZLES: [&dyn SomePuzzle; 6] = [
     &day1::PUZZLE,
     &day2::PUZZLE,
     &day3::PUZZLE,
     &day4::PUZZLE,
     &day5::PUZZLE,
+    &day6::PUZZLE,
 ];
 
 fn main() {
