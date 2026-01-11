@@ -77,6 +77,7 @@ module Pre (
     assert,
     assertFailure,
     golden,
+    exampleTestResult,
 )
 where
 
@@ -325,8 +326,8 @@ newtype TestName = TestName Text
 getTestTree :: TestTree m r -> Tree Text
 getTestTree (TestTree (TestName name) _ ts) = Node name $ map getTestTree ts
 
-displayTestResultsConsole :: Maybe Int -> TestResult -> TL.Text
-displayTestResultsConsole terminalWidth testResult =
+displayTestResultsConsole :: (NominalDiffTime -> Char) -> Maybe Int -> TestResult -> TL.Text
+displayTestResultsConsole timeBarFunction terminalWidth testResult =
     displayResult 0 testResult <> TL.pack (setSGRCode [Reset])
   where
     displayResult indent =
@@ -364,17 +365,19 @@ displayTestResultsConsole terminalWidth testResult =
             <> name
             <> maybe
                 mempty
-                ( \_t@(showTime -> tt) ->
+                ( \t@(showTime -> tt) ->
                     T.replicate
                         ( fromIntegral $
                             maybe
                                 3
-                                (\n -> n - (2 * indent + T.length name + T.length tt + 2))
+                                (\n -> n - (2 * indent + T.length name + T.length tt + 4))
                                 terminalWidth
                         )
                         " "
                         <> setColour Dull Blue
                         <> tt
+                        <> " "
+                        <> T.singleton (timeBarFunction t)
                 )
                 time
             <> "\n"
@@ -459,3 +462,1237 @@ golden file actual = do
                             T.writeFile file actual
                 else
                     throwError GoldenMissing
+
+exampleTestResult :: TestResult
+exampleTestResult =
+    TestResult
+        { name = TestName "tests"
+        , logs = []
+        , result =
+            Right
+                ( 0.000008967
+                ,
+                    [ TestResult
+                        { name = TestName "examples"
+                        , logs = []
+                        , result =
+                            Right
+                                ( 0.000002405
+                                ,
+                                    [ TestResult
+                                        { name = TestName "1"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000114605
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000058089
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000023895
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "2"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000027692
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000040646
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000048722
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "3"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000036248
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000031349
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000029976
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "4"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000031709
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000103133
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000343045
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "extra"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000001883
+                                                                ,
+                                                                    [ TestResult
+                                                                        { name = TestName "round trip"
+                                                                        , logs = []
+                                                                        , result =
+                                                                            Right
+                                                                                ( 0.000040245
+                                                                                , []
+                                                                                )
+                                                                        }
+                                                                    , TestResult
+                                                                        { name = TestName "frames"
+                                                                        , logs = []
+                                                                        , result =
+                                                                            Right
+                                                                                ( 0.000034855
+                                                                                ,
+                                                                                    [ TestResult
+                                                                                        { name = TestName "0"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.0000373
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "1"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000025197
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "2"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000024947
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "3"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000022812
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "4"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000021851
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "5"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000021821
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "6"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000023013
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "7"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00002124
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "8"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00002128
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "9"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000023034
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "end"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00000538
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    ]
+                                                                                )
+                                                                        }
+                                                                    ]
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "5"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000024426
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000021851
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000030337
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "6"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000033443
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000030217
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000024476
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "7"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000032972
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000038723
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000029566
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "8"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000030387
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000100248
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000101951
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "9"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000025198
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000030046
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000600027
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    ]
+                                )
+                        }
+                    , TestResult
+                        { name = TestName "real"
+                        , logs = []
+                        , result =
+                            Right
+                                ( 0.000001943
+                                ,
+                                    [ TestResult
+                                        { name = TestName "1"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.001730131
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.001631867
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000546617
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "2"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000073909
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.251483373
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.422864155
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "3"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.004100956
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.001739268
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.001751551
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "4"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.001411282
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.010032562
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.349189653
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "extra"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000001523
+                                                                ,
+                                                                    [ TestResult
+                                                                        { name = TestName "round trip"
+                                                                        , logs = []
+                                                                        , result =
+                                                                            Right
+                                                                                ( 0.001444965
+                                                                                , []
+                                                                                )
+                                                                        }
+                                                                    , TestResult
+                                                                        { name = TestName "frames"
+                                                                        , logs = []
+                                                                        , result =
+                                                                            Right
+                                                                                ( 0.030300588
+                                                                                ,
+                                                                                    [ TestResult
+                                                                                        { name = TestName "0"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.001072555
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "1"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000784895
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "2"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000925199
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "3"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000775888
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "4"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000911994
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "5"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000780266
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "6"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000891385
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "7"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000775718
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "8"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000858043
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "9"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00071276
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "10"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000846681
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "11"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000708832
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "12"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000833266
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "13"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00070235
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "14"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00086194
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "15"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000694795
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "16"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000840269
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "17"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000674768
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "18"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000817336
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "19"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000684727
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "20"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000801185
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "21"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000669007
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "22"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000816875
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "23"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000689546
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "24"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000825851
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "25"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000691309
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "26"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000843916
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "27"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000667154
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "28"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000896264
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "29"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000695257
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "30"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000846381
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "31"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000696779
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "32"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000822746
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "33"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000682302
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "34"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000813198
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "35"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00088887
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "36"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000719391
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "37"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000936059
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "38"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000708822
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "39"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00088882
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "40"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000709182
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "41"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000832534
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "42"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000702901
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "43"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000808809
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "44"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000690618
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "45"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.00079803
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "46"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000703742
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "47"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000825772
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "48"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000719441
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "49"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000810694
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "50"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000692491
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "51"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000803229
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "52"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000680669
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "53"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000785686
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "54"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000641956
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "55"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000732787
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "56"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000543541
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "57"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000576974
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "58"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000428114
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    , TestResult
+                                                                                        { name = TestName "end"
+                                                                                        , logs = []
+                                                                                        , result =
+                                                                                            Right
+                                                                                                ( 0.000199855
+                                                                                                , []
+                                                                                                )
+                                                                                        }
+                                                                                    ]
+                                                                                )
+                                                                        }
+                                                                    ]
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "5"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.0004574
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000550965
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000062508
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "6"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.002074248
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000967398
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000650112
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "7"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.00114374
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000747876
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.000265468
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "8"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.000442361
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.100017142
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.083740998
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    , TestResult
+                                        { name = TestName "9"
+                                        , logs = []
+                                        , result =
+                                            Right
+                                                ( 0.0006119
+                                                ,
+                                                    [ TestResult
+                                                        { name = TestName "1"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.005058044
+                                                                , []
+                                                                )
+                                                        }
+                                                    , TestResult
+                                                        { name = TestName "2"
+                                                        , logs = []
+                                                        , result =
+                                                            Right
+                                                                ( 0.127813254
+                                                                , []
+                                                                )
+                                                        }
+                                                    ]
+                                                )
+                                        }
+                                    ]
+                                )
+                        }
+                    ]
+                )
+        }
