@@ -435,7 +435,7 @@ runTests opts r0 (TestTree name tc ts) =
                     pure $ Left $ ExceptionFailure e
                 Right (Right (r, dt)) -> do
                     rs <- for ts $ runTests opts r
-                    let childTimes = either (const 0) id $ fmap (sum . map fst) $ traverse (.result) rs
+                    let childTimes = sum $ map (either (const 0) fst . (.result)) rs
                     pure $ Right (dt + childTimes, rs)
   where
     runTest = \case
