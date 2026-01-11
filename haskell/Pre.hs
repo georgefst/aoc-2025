@@ -107,7 +107,6 @@ import Control.Monad.Writer
 import Data.Bifunctor
 import Data.Bool
 import Data.Char
-import Data.Either.Extra
 import Data.Finite
 import Data.Fixed (Fixed (MkFixed))
 import Data.Foldable hiding (foldl1, foldr1, maximum, maximumBy, minimum, minimumBy)
@@ -436,7 +435,7 @@ runTests opts r0 (TestTree name tc ts) =
                     pure $ Left $ ExceptionFailure e
                 Right (Right (r, dt)) -> do
                     rs <- for ts $ runTests opts r
-                    let childTimes = fromMaybe 0 $ eitherToMaybe $ fmap (sum . map fst) $ traverse (.result) rs
+                    let childTimes = either (const 0) id $ fmap (sum . map fst) $ traverse (.result) rs
                     pure $ Right (dt + childTimes, rs)
   where
     runTest = \case
