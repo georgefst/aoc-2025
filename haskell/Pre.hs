@@ -364,22 +364,34 @@ displayTestResultsConsole terminalWidth testResult =
             <> name
             <> maybe
                 mempty
-                ( \_t@(showTime -> tt) ->
+                ( \t@(showTime -> tt) ->
                     T.replicate
                         ( fromIntegral $
                             maybe
                                 3
-                                (\n -> n - (2 * indent + T.length name + T.length tt + 2))
+                                (\n -> n - (2 * indent + T.length name + T.length tt + 4))
                                 terminalWidth
                         )
                         " "
                         <> setColour Dull Blue
                         <> tt
+                        <> " "
+                        <> T.singleton (timeBarFunction t)
                 )
                 time
             <> "\n"
     paddedAllLines p = T.unlines . map (p <>) . T.lines
     indentAllLines indent = paddedAllLines $ T.replicate (indent * 2) " "
+    timeBarFunction t
+        | t < 0.01 = ' '
+        | t < 0.03 = '▁'
+        | t < 0.1 = '▂'
+        | t < 0.3 = '▃'
+        | t < 1 = '▄'
+        | t < 3 = '▅'
+        | t < 10 = '▆'
+        | t < 30 = '▇'
+        | otherwise = '█'
     showTime (nominalDiffTimeToSeconds -> MkFixed duration) =
         -- SI prefixes, and always exactly 2 decimal places, or 3 if there's no prefix
         T.show res
