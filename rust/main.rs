@@ -29,7 +29,7 @@ fn main() {
             println!("  {}", puzzle.number());
             let input = fs::read_to_string(format!("../inputs/{}/{}", t, puzzle.number()))
                 .expect("no input file");
-            puzzle.with_parts(&input, &|n, run| {
+            puzzle.with_parts(*is_real_data, &input, &|n, run| {
                 let expected =
                     fs::read_to_string(format!("../outputs/{}/{}/{}", t, puzzle.number(), n))
                         .expect("no golden file");
@@ -53,14 +53,14 @@ fn main() {
 
 pub trait SomePuzzle {
     fn number(&self) -> u32;
-    fn with_parts(&self, input: &str, f: &dyn Fn(usize, &dyn Fn() -> String));
+    fn with_parts(&self, is_real_data: bool, input: &str, f: &dyn Fn(usize, &dyn Fn() -> String));
 }
 impl<Input, const N: usize> SomePuzzle for Puzzle<Input, { N }> {
     fn number(&self) -> u32 {
         self.number
     }
-    fn with_parts(&self, s: &str, f: &dyn Fn(usize, &dyn Fn() -> String)) {
-        let input = (self.parser)(s);
+    fn with_parts(&self, is_real_data: bool, s: &str, f: &dyn Fn(usize, &dyn Fn() -> String)) {
+        let input = (self.parser)(is_real_data, s);
         for (i, p) in self.parts.iter().enumerate() {
             f(i + 1, &|| p(&input));
         }

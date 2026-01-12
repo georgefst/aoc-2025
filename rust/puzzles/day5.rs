@@ -11,7 +11,7 @@ use nom::{
 
 pub const PUZZLE: Puzzle<(Vec<Range>, Vec<usize>), 2> = Puzzle {
     number: 5,
-    parser: |input| {
+    parser: |_, input| {
         terminated::<_, _, Error<&str>, _, _>(
             separated_pair(
                 separated_list1(

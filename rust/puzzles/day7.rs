@@ -13,7 +13,7 @@ use std::collections::{HashMap, HashSet};
 
 pub const PUZZLE: Puzzle<(usize, Vec<HashSet<usize>>), 2> = Puzzle {
     number: 7,
-    parser: |input| {
+    parser: |_, input| {
         terminated::<_, _, Error<&str>, _, _>(
             terminated(
                 (

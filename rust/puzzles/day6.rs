@@ -13,7 +13,7 @@ use std::ops::{Add, Mul};
 
 pub const PUZZLE: Puzzle<(Vec<Op>, Vec<Vec<Option<u8>>>), 2> = Puzzle {
     number: 6,
-    parser: |input| {
+    parser: |_, input| {
         terminated::<_, _, Error<&str>, _, _>(
             (
                 terminated(
