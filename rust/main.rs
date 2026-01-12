@@ -9,7 +9,7 @@ use puzzles::day5;
 use puzzles::day6;
 use puzzles::day7;
 use std::fs;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 const PUZZLES: [&dyn SomePuzzle; 7] = [
     &day1::PUZZLE,
@@ -42,9 +42,7 @@ fn main() {
                     n,
                     if expected == output {
                         let mut s = String::from("OK");
-                        if elapsed > Duration::from_millis(10) {
-                            s.push_str(&format!(" ({:?})", elapsed));
-                        }
+                        s.push_str(&format!(" ({:?})", elapsed));
                         s
                     } else {
                         format!("expected {}, got {}", expected, output)
