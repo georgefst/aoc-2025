@@ -41,9 +41,7 @@ fn main() {
                     "    {}: {}",
                     n,
                     if expected == output {
-                        let mut s = String::from("OK");
-                        s.push_str(&format!(" ({:?})", elapsed));
-                        s
+                        format!("OK ({:?})", elapsed)
                     } else {
                         format!("expected {}, got {}", expected, output)
                     }
