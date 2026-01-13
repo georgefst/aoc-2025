@@ -31,8 +31,7 @@ pub const PUZZLE: Puzzle<(usize, Vec<HashSet<usize>>), 2> = Puzzle {
                             .map(|row| {
                                 row.into_iter()
                                     .enumerate()
-                                    .filter(|(_, b)| *b)
-                                    .map(|(i, _)| i)
+                                    .filter_map(|(i, b)| if b { Some(i) } else { None })
                                     .collect()
                             })
                             .collect()
