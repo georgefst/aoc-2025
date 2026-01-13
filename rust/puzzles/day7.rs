@@ -77,8 +77,7 @@ pub const PUZZLE: Puzzle<(usize, Vec<HashSet<usize>>), 2> = Puzzle {
                             vec![x]
                         }
                         .into_iter()
-                        .map(|x1| (x1, n))
-                        .collect_vec()
+                        .map(move |x1| (x1, n))
                     })
                     .into_group_map()
                     .into_iter()
