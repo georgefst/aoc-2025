@@ -9,6 +9,7 @@ use nom::{
     sequence::{separated_pair, terminated},
 };
 use partitions::PartitionVec;
+use std::collections::HashMap;
 
 pub const PUZZLE: Puzzle<(usize, Vec<V3>), 2> = Puzzle {
     number: 8,
@@ -30,17 +31,32 @@ pub const PUZZLE: Puzzle<(usize, Vec<V3>), 2> = Puzzle {
         .1
     },
     parts: [
-        // TODO parts take about 28s each on real data!
-        // compared to 0.25 for Haskell
-        // maybe I should be using a mutable DSU instead of cloning?
-        // commit initial version first, as that could be quite a big refactor
-        // if that is it, worth noting that persistent immutable version is obviously a lot nicer etc.
-        // and that maybe laziness is helping in Haskell
+        // TODO factor out commonality between parts 1 and 2
+        // first block is identical
+        // second has some duplication...
+        // maybe we can get half way back to something like the Haskell `connectBoxes`, as an iterator
+        // it would have to be some sort of iterator where the mutability is internal, so we never need to clone
+        // third is (a subset of) the part-specific code in the Haskell version
         |(n, boxes)| {
-            connect_boxes(boxes)
-                .get(*n)
-                .expect("not enough boxes")
-                .1
+            // TODO can we do more in a single iteration of `boxes`, or at least do less copying?
+            let index_map: HashMap<V3, usize> = boxes
+                .iter()
+                .copied()
+                .enumerate()
+                .map(|(i, v)| (v, i))
+                .collect();
+            let all_pairs = sorted_pairs(boxes);
+            let mut partition: PartitionVec<V3> = boxes.iter().copied().collect();
+
+            for (a, b) in all_pairs.iter().take(*n) {
+                // TODO eugh, what to do about unsafe lookups?
+                // API seems to be less high-level and type safe then the Haskell lib
+                // what we really want is to be able to just pass two items (in our case, `V3`s) and union their sets
+                // Haskell people are just better at API design...
+                partition.union(index_map[a], index_map[b]);
+            }
+
+            partition
                 .all_sets()
                 .map(|s| s.count())
                 .sorted_by(|a, b| b.cmp(a))
@@ -49,36 +65,34 @@ pub const PUZZLE: Puzzle<(usize, Vec<V3>), 2> = Puzzle {
                 .to_string()
         },
         |(_, boxes)| {
-            // TODO it's a bit of a shame we can't fully chain things here
-            // I mean we could, e.g. with the `pipe` crate
-            // ask Belle?
-            // note this might disappear if we used a mutable DSU
-            let (pair, _) = connect_boxes(boxes)
-                .into_iter()
-                .take_while(|(_, ds)| ds.amount_of_sets() > 1)
-                .last()
-                .expect("sets never unified");
+            let index_map: HashMap<V3, usize> = boxes
+                .iter()
+                .copied()
+                .enumerate()
+                .map(|(i, v)| (v, i))
+                .collect();
+            let all_pairs = sorted_pairs(boxes);
+            let mut partition: PartitionVec<V3> = boxes.iter().copied().collect();
+
+            let mut last_pair = None;
+            for (a, b) in all_pairs.iter() {
+                if partition.amount_of_sets() == 1 {
+                    break;
+                }
+                last_pair = Some((a, b));
+                partition.union(index_map[a], index_map[b]);
+            }
+
+            let pair = last_pair.expect("sets never unified");
             (pair.0.x * pair.1.x).to_string()
         },
     ],
 };
 
-// TODO not fully checked
-fn connect_boxes(boxes: &[V3]) -> Vec<((V3, V3), PartitionVec<V3>)> {
-    let all_pairs: Vec<(V3, V3)> = all_unordered_pairs(boxes)
+fn sorted_pairs(boxes: &[V3]) -> Vec<(V3, V3)> {
+    all_unordered_pairs(boxes)
         .into_iter()
         .sorted_by_key(|(a, b)| distance_squared(a, b))
-        .collect();
-    let mut partition: PartitionVec<V3> = boxes.iter().copied().collect();
-    all_pairs
-        .into_iter()
-        .map(|(a, b)| {
-            let result = ((a, b), partition.clone());
-            let a_idx = boxes.iter().position(|v| *v == a).unwrap();
-            let b_idx = boxes.iter().position(|v| *v == b).unwrap();
-            partition.union(a_idx, b_idx);
-            result
-        })
         .collect()
 }
 
@@ -95,7 +109,7 @@ fn all_unordered_pairs<T: Copy>(items: &[T]) -> Vec<(T, T)> {
 // nalgebra looks standard, but has bad support for integer vectors
 // see e.g. `distance_squared` requiring floats
 // just given up on finding an alternative for now
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct V3 {
     x: usize,
     y: usize,
