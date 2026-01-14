@@ -342,8 +342,8 @@ displayTestResultsConsole terminalWidth testResult =
                                 <> displayLogs
                                 <> setColour Vivid Red
                                 <> indentAllLines indent case e of
-                                    ExceptionFailure ex -> T.show ex
-                                    AssertionFailure t -> T.stripEnd t
+                                    ExceptionFailure ex -> "Exception: " <> T.show ex
+                                    AssertionFailure t -> "Assertion failed: " <> T.stripEnd t
                                     GoldenMissing -> "Golden file missing"
                                     GoldenFailure{expected, actual} ->
                                         "Expected:\n" <> T.stripEnd expected <> "\nActual:\n" <> T.stripEnd actual
