@@ -457,6 +457,7 @@ assertFailure = throwError . AssertionFailure
 golden :: (MonadIO m, MonadFail m) => FilePath -> Text -> Test m ()
 golden file actual = do
     TestRunnerOpts{..} <- ask
+    -- this is all wrong - see notepad
     exists <- liftIO $ doesFileExist file
     if exists
         then do

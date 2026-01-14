@@ -23,11 +23,26 @@ const PUZZLES: [&dyn SomePuzzle; 8] = [
     &day8::PUZZLE,
 ];
 
+// we do this instead of the Haskell approach because commenting out elements from the list/array literal is fiddly:
+// - as it's a constant, a type annotation is required, and we need to update the type to reflect the new size
+// - dead code checking is program-wide rather than by module, so we get loads of IDE warnings
+// - rustfmt wants the whole literal to be on one line (when we have three puzzles), and we have no say over this
+fn test_filter(_is_real_data: bool, p: &dyn SomePuzzle) -> bool {
+    // !(_is_real_data && p.number() == 2)
+    // !_is_real_data && (p.number() == 1 || p.number() == 5 || p.number() == 6)
+    !_is_real_data &&
+     p.number() == 8
+}
+
 fn main() {
     [false, true].iter().for_each(|is_real_data| {
         let t = if *is_real_data { "real" } else { "examples" };
         println!("{}", t);
-        PUZZLES.into_iter().for_each(|puzzle| {
+        // PUZZLES.into_iter().for_each(|puzzle| {
+            PUZZLES
+                .into_iter()
+                .filter(|x| test_filter(*is_real_data, *x))
+                .for_each(|puzzle| {
             println!("  {}", puzzle.number());
             let input = fs::read_to_string(format!("../inputs/{}/{}", t, puzzle.number()))
                 .expect("no input file");

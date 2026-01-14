@@ -4,6 +4,10 @@ import Pre
 
 import Data.Text qualified as T
 
+-- this is somewhat slow? other than 4 (and to some extent 8), others are all very fast
+-- generate repetitions up front instead? see aoc.md
+-- do same for Rust
+-- also look at Belle's micro-optimisations, though possibly irrelevant if I make that algorithm change
 puzzle :: Puzzle
 puzzle =
     Puzzle

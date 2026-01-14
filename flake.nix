@@ -48,6 +48,8 @@
       devShells.default = pkgs.mkShell {
         inputsFrom = [
           haskell.devShells.default
+          # TODO weirdly, this (sometimes?) causes some HLS /tmp error, only on Fry
+          # thankfully, I've so far been able to comment it out, rebuild, run HLS on command line, then bring it back
           (rust.devShell { })
         ];
         packages = with pkgs; [

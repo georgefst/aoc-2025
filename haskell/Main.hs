@@ -1,6 +1,12 @@
+{-# OPTIONS_GHC -Wno-unused-imports #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+
 module Main (main) where
 
 import Pre
+
+import Data.Bits
+import Data.Time
 
 import Data.Finite
 import Data.Functor.Contravariant
@@ -19,14 +25,41 @@ import Puzzles.Day8 qualified as Day8
 import Puzzles.Day9 qualified as Day9
 import System.Console.Terminal.Size qualified as Terminal.Size
 
+import Debug.Pretty.Simple (pTraceShowId, pTraceShowIdForceColor, pTraceShowWith, pTraceWith)
+import GHC.Exts
+import Numeric (showHex)
+import System.Console.ANSI
+import System.Console.Terminal.Size (Window (Window), hSize)
+import System.Console.Terminal.Size qualified
+import System.Environment (lookupEnv)
+import System.Exit (exitSuccess)
+import System.IO (IOMode (ReadMode), stdout, withFile)
+import Text.Pretty.Simple
+import Text.Read
+import Unsafe.Coerce (unsafeCoerce)
+
+-- TODO upstream
+-- it is a bit of a shame that we can't easily allow for just one of the vars to exist, without changing the API
+sizeFromEnv :: IO (Maybe (Window Int))
+sizeFromEnv = do
+    rows <- lookupEnv "LINES"
+    cols <- lookupEnv "COLUMNS"
+    pure do
+        r <- rows >>= readMaybe
+        c <- cols >>= readMaybe
+        pure $ Window r c
+
 main :: IO ()
 main = do
     -- terminalWidth <- Terminal.Size.width <<$>> Terminal.Size.size -- TODO this doesn't work in GHCID or GHCIWatch...
+    -- terminalWidth <- Terminal.Size.width <<$>> sizeFromEnv
     terminalWidth <- pure $ Just 62
+    -- TL.putStrLn . displayTestResultsConsole (intToFilledBar . testDurationBarFunction) terminalWidth
     TL.putStrLn . displayTestResultsConsole terminalWidth
         =<< runTests
             TestRunnerOpts
                 { regenerateGoldenFiles = False
+                -- { regenerateGoldenFiles = True
                 }
             ()
             tests
@@ -34,18 +67,19 @@ main = do
 tests :: TestTree IO ()
 tests =
     test "tests" pure $
+        -- [False] <&> \isRealData@(bool "examples" "real" -> t) ->
         enumerate <&> \isRealData@(bool "examples" "real" -> t) ->
             test (T.pack t) pure $
                 [ Day1.puzzle
-                , Day2.puzzle
+                -- , Day2.puzzlex
                 , Day3.puzzle
-                , Day4.puzzle
+                -- , Day4.puzzle
                 , Day5.puzzle
                 , Day6.puzzle
                 , Day7.puzzle
-                , Day8.puzzle
-                , Day9.puzzle
-                , Day10.puzzle
+                -- , Day8.puzzle
+                -- , Day9.puzzle
+                -- , Day10.puzzle
                 ]
                     <&> \Puzzle{number = show -> pt, parser, parts, extraTests} ->
                         testLazy
