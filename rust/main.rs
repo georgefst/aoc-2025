@@ -8,10 +8,11 @@ use puzzles::day4;
 use puzzles::day5;
 use puzzles::day6;
 use puzzles::day7;
+use puzzles::day8;
 use std::fs;
 use std::time::Instant;
 
-const PUZZLES: [&dyn SomePuzzle; 7] = [
+const PUZZLES: [&dyn SomePuzzle; 8] = [
     &day1::PUZZLE,
     &day2::PUZZLE,
     &day3::PUZZLE,
@@ -19,6 +20,7 @@ const PUZZLES: [&dyn SomePuzzle; 7] = [
     &day5::PUZZLE,
     &day6::PUZZLE,
     &day7::PUZZLE,
+    &day8::PUZZLE,
 ];
 
 fn main() {

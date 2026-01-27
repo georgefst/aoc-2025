@@ -10,3 +10,4 @@ name = "aoc"
 [dependencies]
 itertools = "0.14"
 nom = "8.0.0"
+partitions = "0.2.4"
