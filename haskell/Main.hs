@@ -18,11 +18,24 @@ import Puzzles.Day7 qualified as Day7
 import Puzzles.Day8 qualified as Day8
 import Puzzles.Day9 qualified as Day9
 import System.Console.Terminal.Size qualified as Terminal.Size
+import System.Environment
+import Text.Read
+
+-- TODO upstream
+-- it is a bit of a shame that we can't easily allow for just one of the vars to exist, without changing the API
+sizeFromEnv :: IO (Maybe (Terminal.Size.Window Int))
+sizeFromEnv = do
+    rows <- lookupEnv "LINES"
+    cols <- lookupEnv "COLUMNS"
+    pure do
+        r <- rows >>= readMaybe
+        c <- cols >>= readMaybe
+        pure $ Terminal.Size.Window r c
 
 main :: IO ()
 main = do
     -- terminalWidth <- Terminal.Size.width <<$>> Terminal.Size.size -- TODO this doesn't work in GHCID or GHCIWatch...
-    terminalWidth <- pure $ Just 62
+    terminalWidth <- Terminal.Size.width <<$>> sizeFromEnv
     TL.putStrLn . displayTestResultsConsole terminalWidth
         =<< runTests
             TestRunnerOpts
