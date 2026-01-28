@@ -26,6 +26,9 @@ puzzle =
                                 R -> abs c
                                 L ->
                                     if
+                                        -- TODO cook up an input that hits this case, and add as a test?
+                                        -- then do same fix and test in Rust
+                                        | p == 0 && p' == 0 -> abs c
                                         | p == 0 -> abs c - 1
                                         | p' == 0 -> abs c + 1
                                         | otherwise -> abs c

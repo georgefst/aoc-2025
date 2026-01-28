@@ -37,6 +37,8 @@
       ];
       pkgs = import nixpkgs { inherit system overlays; inherit (haskellNix) config; };
       haskell = pkgs.hixProject.flake { };
+      # TODO what do we miss by doing this the simple way? as opposed to other options shown in Crane docs
+      # Cargo building dependencies instead of Nix?
       rust = (crane.mkLib pkgs).overrideToolchain (p: p.rust-bin.selectLatestNightlyWith (
         toolchain: toolchain.default.override {
           extensions = [ "rust-src" ];
@@ -48,6 +50,8 @@
       devShells.default = pkgs.mkShell {
         inputsFrom = [
           haskell.devShells.default
+          # TODO weirdly, this (sometimes?) causes some HLS /tmp error, only on Fry
+          # thankfully, I've so far been able to comment it out, rebuild, run HLS on command line, then bring it back
           (rust.devShell { })
         ];
         packages = with pkgs; [
